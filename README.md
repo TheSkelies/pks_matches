@@ -15,4 +15,13 @@ javac -d out (Get-ChildItem -Recurse -Filter *.java | % { $_.FullName })
 ## 3 Запуск
 
 в той же папке повершела 
+
 java -cp out pksmatches.Main
+
+Переходить в ветку dev 
+
+git switch dev
+
+Копирование репозитория 
+
+git clone https://github.com/TheSkelies/pks_matches
