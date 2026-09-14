@@ -15,4 +15,4 @@ javac -d out (Get-ChildItem -Recurse -Filter *.java | % { $_.FullName })
 ## 3 Запуск
 
 в той же папке повершела 
-java -cp out pks_matches.Main
+java -cp out pksmatches.Main
