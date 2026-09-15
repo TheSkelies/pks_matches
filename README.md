@@ -15,6 +15,7 @@ javac -d out (Get-ChildItem -Recurse -Filter *.java | % { $_.FullName })
 ## 3 Запуск
 
 в той же папке повершела 
+
 java -cp out pksmatches.Main
 
 ## 4 Версия java 24.0.1
