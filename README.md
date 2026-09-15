@@ -18,10 +18,18 @@ javac -d out (Get-ChildItem -Recurse -Filter *.java | % { $_.FullName })
 
 java -cp out pksmatches.Main
 
-Переходить в ветку dev 
+## 4 Версия java 24.0.1
 
-git switch dev
+в терминале пропишите команду 
 
-Копирование репозитория 
+java -version
 
-git clone https://github.com/TheSkelies/pks_matches
+Если версия 24.0.1 - отлично
+
+Иначе скачайте эту версию
+
+[Ссылка на сайт скачки](https://www.oracle.com/java/technologies/javase/jdk24-archive-downloads.html)
+
+Пролистайте до 24.0.1 версии и скачайте её
+
+Потом убедитесь что используете именно эту версию предыдущей командой
