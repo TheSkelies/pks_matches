@@ -1,42 +1,38 @@
 package pksmatches.service;
 
 import pksmatches.model.Tournament;
+import pksmatches.repository.TournamentRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class TournamentService {
+    private final TournamentRepository tournamentRepository;
 
-    private final List<Tournament> tournaments = new ArrayList<>();
-    private int nextId = 1;
+    public TournamentService(TournamentRepository tournamentRepository) {
+        this.tournamentRepository = tournamentRepository;
+    }
 
-    public void add(Tournament tournament) {
-        if (tournament == null) {
-            throw new IllegalArgumentException("Турнир не может быть null");
-        }
-        if (tournament.getId() <= 0) {
-            tournament.setId(nextId++);
-        } else if (tournament.getId() >= nextId) {
-            nextId = tournament.getId() + 1;
-        }
-        tournaments.add(tournament);
+    public Tournament add(Tournament tournament) {
+        if (tournament == null) throw new IllegalArgumentException("Турнир не может быть null");
+        return tournamentRepository.save(tournament);
     }
 
     public List<Tournament> getAll() {
-        return new ArrayList<>(tournaments);
+        return tournamentRepository.findAll();
     }
 
     public Optional<Tournament> findById(int id) {
-        return tournaments.stream().filter(t -> t.getId() == id).findFirst();
+        return tournamentRepository.findById(id);
     }
 
     public Tournament getById(int id) {
-        return findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Турнир с ID=" + id + " не найден"));
+        return findById(id).orElseThrow(() -> new IllegalArgumentException("Турнир с ID=" + id + " не найден"));
     }
 
     public boolean remove(int id) {
-        return tournaments.removeIf(t -> t.getId() == id);
+        if (tournamentRepository.findById(id).isEmpty()) return false;
+        tournamentRepository.deleteById(id);
+        return true;
     }
 }
