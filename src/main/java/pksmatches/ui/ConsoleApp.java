@@ -3,6 +3,7 @@ package pksmatches.ui;
 import pksmatches.model.Match;
 import pksmatches.model.Tournament;
 import pksmatches.model.User;
+import pksmatches.model.enums.MatchStatus;
 import pksmatches.model.enums.TournamentStage;
 import pksmatches.model.enums.UserRole;
 import pksmatches.src.main.java.pksmatches.repository.MatchRepository;
@@ -200,7 +201,14 @@ public class ConsoleApp {
             return;
         }
         for (Tournament t : list) {
-            System.out.println(t);
+            String name = t.getName();
+            LocalDate startDate = t.getStartDate();
+            LocalDate endDate = t.getEndDate();
+
+            String formattedStartDate = startDate.format(DATE_FMT);
+            String formattedEndDate = endDate.format(DATE_FMT);
+
+            System.out.println("Турнир " + name + " начинается " + formattedStartDate + ", заканчивается " + formattedEndDate);
         }
     }
 
@@ -221,7 +229,11 @@ public class ConsoleApp {
     private void listUsers() {
         if (!requireAdmin()) return;
         for (User u : userService.getAll()) {
-            System.out.println(u);
+            int id = u.getId();
+            String username = u.getUsername();
+            UserRole role = u.getRole();
+
+            System.out.println(id + ". Пользователь " + username + " имеет роль " + role);
         }
     }
 
@@ -261,7 +273,7 @@ public class ConsoleApp {
             return null;
         }
         for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + list.get(i));
+            System.out.println(list.get(i).getId() + ". " + list.get(i).getName());
         }
         int idx = readInt("Выберите турнир: ") - 1;
         if (idx < 0 || idx >= list.size()) {
@@ -294,7 +306,30 @@ public class ConsoleApp {
             return;
         }
         for (Match m : list) {
-            System.out.println(m);
+            Tournament tournament = m.getTournament();
+            String team1 = m.getTeam1();
+            String team2 = m.getTeam2();
+            String matchDate = m.getMatchDate().format(DATETIME_FMT);
+            TournamentStage stage = m.getStage();
+            MatchStatus status = m.getStatus();
+            int score1 = m.getScore1();
+            int score2 = m.getScore2();
+
+            if (status == MatchStatus.SCHEDULED) {
+                System.out.println("Матч команд " + team1 + " и " + team2 + " запланирован на " + matchDate + " стадии " +
+                        stage + "\n" + "Турнир: " + tournament.getName());
+            }
+            else if (status == MatchStatus.CANCELLED) {
+                System.out.println("Матч команд " + team1 + " и " + team2 + " отменён" + "\n" + "Турнир: " + tournament.getName());
+            }
+            else if (status == MatchStatus.FINISHED) {
+                System.out.println("Матч команд " + team1 + " и " + team2 + " завершён со счётом " + score1 + ":" + score2
+                        + "\n" + "Турнир: " + tournament.getName());
+            }
+            else if (status == MatchStatus.LIVE) {
+                System.out.println("Матч команд " + team1 + " и " + team2 + " идёт со счётом " + score1 + ":" + score2
+                        + "\n" + "Турнир: " + tournament.getName());
+            }
         }
     }
 
