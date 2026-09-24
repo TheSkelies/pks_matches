@@ -287,7 +287,7 @@ public class ConsoleApp {
             return null;
         }
         for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + list.get(i));
+            System.out.println((i + 1) + ". " + "Матч команд " + list.get(i).getTeam1() + " и " + list.get(i).getTeam2());
         }
         int idx = readInt("Выберите матч: ") - 1;
         if (idx < 0 || idx >= list.size()) {
