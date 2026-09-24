@@ -3,7 +3,7 @@ package pksmatches.service;
 import pksmatches.model.Match;
 import pksmatches.model.Tournament;
 import pksmatches.model.enums.MatchStatus;
-import pksmatches.repository.MatchRepository;
+import pksmatches.src.main.java.pksmatches.repository.MatchRepository;
 
 import java.util.List;
 import java.util.Optional;

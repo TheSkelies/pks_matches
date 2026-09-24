@@ -4,7 +4,7 @@ import pksmatches.model.Match;
 import pksmatches.model.Tournament;
 import pksmatches.model.enums.MatchStatus;
 import pksmatches.model.enums.TournamentStage;
-import repository.MatchRepository;
+import pksmatches.src.main.java.pksmatches.repository.MatchRepository;
 import pksmatches.util.DatabaseManager;
 
 import java.sql.*;
