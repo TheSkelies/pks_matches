@@ -6,7 +6,7 @@ import pksmatches.model.User;
 import pksmatches.model.enums.MatchStatus;
 import pksmatches.model.enums.TournamentStage;
 import pksmatches.model.enums.UserRole;
-import pksmatches.src.main.java.pksmatches.repository.MatchRepository;
+import pksmatches.repository.MatchRepository;
 import pksmatches.repository.TournamentRepository;
 import pksmatches.repository.UserRepository;
 import pksmatches.repository.impl.MatchRepositoryJdbc;
@@ -36,12 +36,10 @@ public class ConsoleApp {
     private User currentUser;
 
     public ConsoleApp() {
-        // 1. Создаём реализации репозиториев (JDBC)
         MatchRepository matchRepository = new MatchRepositoryJdbc();
         TournamentRepository tournamentRepository = new TournamentRepositoryJdbc();
         UserRepository userRepository = new UserRepositoryJdbc();
 
-        // 2. Передаём их в сервисы
         this.matchService = new MatchService(matchRepository);
         this.tournamentService = new TournamentService(tournamentRepository);
         this.userService = new UserService(userRepository);
@@ -50,7 +48,6 @@ public class ConsoleApp {
     public void run() {
         System.out.println("=== Агрегатор матчей ===");
 
-        // Убрали вызов seedDemoData(), так как данные теперь берутся из БД
         if (!login()) {
             System.out.println("Выход.");
             return;
