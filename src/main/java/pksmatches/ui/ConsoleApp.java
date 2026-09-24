@@ -36,12 +36,10 @@ public class ConsoleApp {
     private User currentUser;
 
     public ConsoleApp() {
-        // 1. Создаём реализации репозиториев (JDBC)
         MatchRepository matchRepository = new MatchRepositoryJdbc();
         TournamentRepository tournamentRepository = new TournamentRepositoryJdbc();
         UserRepository userRepository = new UserRepositoryJdbc();
 
-        // 2. Передаём их в сервисы
         this.matchService = new MatchService(matchRepository);
         this.tournamentService = new TournamentService(tournamentRepository);
         this.userService = new UserService(userRepository);
@@ -50,7 +48,6 @@ public class ConsoleApp {
     public void run() {
         System.out.println("=== Агрегатор матчей ===");
 
-        // Убрали вызов seedDemoData(), так как данные теперь берутся из БД
         if (!login()) {
             System.out.println("Выход.");
             return;
@@ -318,17 +315,21 @@ public class ConsoleApp {
             if (status == MatchStatus.SCHEDULED) {
                 System.out.println("Матч команд " + team1 + " и " + team2 + " запланирован на " + matchDate + " стадии " +
                         stage + "\n" + "Турнир: " + tournament.getName());
+                System.out.println("===============");
             }
             else if (status == MatchStatus.CANCELLED) {
                 System.out.println("Матч команд " + team1 + " и " + team2 + " отменён" + "\n" + "Турнир: " + tournament.getName());
+                System.out.println("===============");
             }
             else if (status == MatchStatus.FINISHED) {
                 System.out.println("Матч команд " + team1 + " и " + team2 + " завершён со счётом " + score1 + ":" + score2
                         + "\n" + "Турнир: " + tournament.getName());
+                System.out.println("===============");
             }
             else if (status == MatchStatus.LIVE) {
                 System.out.println("Матч команд " + team1 + " и " + team2 + " идёт со счётом " + score1 + ":" + score2
                         + "\n" + "Турнир: " + tournament.getName());
+                System.out.println("===============");
             }
         }
     }
