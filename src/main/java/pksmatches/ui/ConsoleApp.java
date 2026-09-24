@@ -270,7 +270,7 @@ public class ConsoleApp {
             return null;
         }
         for (int i = 0; i < list.size(); i++) {
-            System.out.println(list.get(i).getId() + ". " + list.get(i).getName());
+            System.out.println((i+1) + ". " + list.get(i).getName());
         }
         int idx = readInt("Выберите турнир: ") - 1;
         if (idx < 0 || idx >= list.size()) {
