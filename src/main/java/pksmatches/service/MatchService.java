@@ -3,68 +3,57 @@ package pksmatches.service;
 import pksmatches.model.Match;
 import pksmatches.model.Tournament;
 import pksmatches.model.enums.MatchStatus;
+import pksmatches.src.main.java.pksmatches.repository.MatchRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class MatchService {
+    private final MatchRepository matchRepository;
 
-    private final List<Match> matches = new ArrayList<>();
-    private int nextId = 1;
+    public MatchService(MatchRepository matchRepository) {
+        this.matchRepository = matchRepository;
+    }
 
     public void addMatch(Match match) {
-        if (match == null) {
-            throw new IllegalArgumentException("Матч не может быть null");
-        }
-        if (match.getId() <= 0) {
-            match.setId(nextId++);
-        } else if (match.getId() >= nextId) {
-            nextId = match.getId() + 1;
-        }
-        matches.add(match);
+        if (match == null) throw new IllegalArgumentException("Матч не может быть null");
+        matchRepository.save(match);
     }
 
     public List<Match> getAllMatches() {
-        return new ArrayList<>(matches);
+        return matchRepository.findAll();
     }
 
     public Optional<Match> findById(int id) {
-        return matches.stream().filter(m -> m.getId() == id).findFirst();
+        return matchRepository.findById(id);
     }
 
     public Match getById(int id) {
-        return findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Матч с ID=" + id + " не найден"));
+        return findById(id).orElseThrow(() -> new IllegalArgumentException("Матч с ID=" + id + " не найден"));
     }
 
     public List<Match> getMatchesByTournament(Tournament tournament) {
-        return matches.stream()
-                .filter(m -> m.getTournament().equals(tournament))
-                .collect(Collectors.toList());
+        return matchRepository.findByTournamentId(tournament.getId());
     }
 
     public List<Match> getLiveMatches() {
-        return matches.stream()
-                .filter(m -> m.getStatus() == MatchStatus.LIVE)
-                .collect(Collectors.toList());
+        return matchRepository.findByStatus(MatchStatus.LIVE);
     }
 
     public List<Match> getMatchesByStatus(MatchStatus status) {
-        return matches.stream()
-                .filter(m -> m.getStatus() == status)
-                .collect(Collectors.toList());
+        return matchRepository.findByStatus(status);
     }
 
     public void startLive(int id) {
         Match m = getById(id);
         m.startLive();
+        matchRepository.update(m);
     }
 
     public void finish(int id) {
         Match m = getById(id);
         m.finish();
+        matchRepository.update(m);
     }
 
     public void cancel(int id) {
@@ -73,6 +62,7 @@ public class MatchService {
             throw new IllegalStateException("Нельзя отменить завершённый матч");
         }
         m.setStatus(MatchStatus.CANCELLED);
+        matchRepository.update(m);
     }
 
     public void updateScore(int id, int score1, int score2) {
@@ -82,9 +72,12 @@ public class MatchService {
         }
         m.setScore1(score1);
         m.setScore2(score2);
+        matchRepository.update(m);
     }
 
     public boolean removeMatch(int id) {
-        return matches.removeIf(m -> m.getId() == id);
+        if (matchRepository.findById(id).isEmpty()) return false;
+        matchRepository.deleteById(id);
+        return true;
     }
 }
