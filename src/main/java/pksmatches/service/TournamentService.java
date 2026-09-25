@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class TournamentService {
+
     private final TournamentRepository tournamentRepository;
 
     public TournamentService(TournamentRepository tournamentRepository) {
