@@ -3,12 +3,13 @@ package pksmatches.service;
 import pksmatches.model.Match;
 import pksmatches.model.Tournament;
 import pksmatches.model.enums.MatchStatus;
-import pksmatches.src.main.java.pksmatches.repository.MatchRepository;
+import pksmatches.repository.MatchRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 public class MatchService {
+
     private final MatchRepository matchRepository;
 
     public MatchService(MatchRepository matchRepository) {
