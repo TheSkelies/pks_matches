@@ -46,6 +46,7 @@ public class TournamentRepositoryJdbc implements TournamentRepository {
         String sql = "INSERT INTO tournaments (name, start_date, end_date) VALUES (?, ?, ?)";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             ps.setString(1, tournament.getName());
             ps.setDate(2, Date.valueOf(tournament.getStartDate()));
             if (tournament.getEndDate() != null) ps.setDate(3, Date.valueOf(tournament.getEndDate()));

@@ -28,7 +28,7 @@ public class ConsoleApp {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in, java.nio.charset.StandardCharsets.UTF_8);
     private final MatchService matchService;
     private final TournamentService tournamentService;
     private final UserService userService;
@@ -212,6 +212,7 @@ public class ConsoleApp {
     private void addTournament() {
         if (!requireAdmin()) return;
         String name = readNonEmpty("Название турнира: ");
+//        String name = "Нижний Новгород";
         LocalDate start = readDate("Дата начала (dd.MM.yyyy): ");
         LocalDate end = readDate("Дата окончания (dd.MM.yyyy): ");
         try {
