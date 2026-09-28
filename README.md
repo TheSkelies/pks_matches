@@ -8,7 +8,7 @@
 ## 2 Компилируйте проект
 в папке проекта в Windows PowerShell (терминал в вс коде и тд)
 
-mvn clean compile
+javac -d out (Get-ChildItem -Recurse -Filter *.java | % { $_.FullName })
 
 (запускать каждый раз, когда меняешь .java)
 
@@ -16,7 +16,7 @@ mvn clean compile
 
 в той же папке повершела 
 
-mvn exec:java
+java -cp out pksmatches.Main
 
 ## 4 Версия java 24.0.1
 
@@ -33,10 +33,3 @@ java -version
 Пролистайте до 24.0.1 версии и скачайте её
 
 Потом убедитесь что используете именно эту версию предыдущей командой
-
-
-# Диаграммы
-
-## ER
-
-![Схема проекта](erdiagram.png)
