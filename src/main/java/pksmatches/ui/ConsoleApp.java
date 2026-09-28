@@ -28,7 +28,7 @@ public class ConsoleApp {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in, java.nio.charset.StandardCharsets.UTF_8);
     private final MatchService matchService;
     private final TournamentService tournamentService;
     private final UserService userService;
@@ -70,11 +70,24 @@ public class ConsoleApp {
                 case 10 -> addTournament();
                 case 11 -> listUsers();
                 case 12 -> addUser();
+                case 13 -> logout();
                 case 0 -> running = false;
                 default -> System.out.println("Неверный пункт меню.");
             }
         }
         System.out.println("До свидания.");
+    }
+
+        private void logout() {
+        System.out.println("Выход из профиля " + currentUser.getUsername() + ".");
+        currentUser = null;
+        while (currentUser == null) {
+            System.out.println();
+            System.out.println("=== Вход в систему ===");
+            if (!login()) {
+                System.out.println("Попробуйте снова.");
+            }
+        }
     }
 
     private void printMenu() {
@@ -93,6 +106,7 @@ public class ConsoleApp {
         System.out.println("10. Добавить турнир");
         System.out.println("11. Список пользователей");
         System.out.println("12. Добавить пользователя");
+        System.out.println("13. Сменить пользователя (Logout)");
         System.out.println("0. Выход");
     }
 
@@ -140,7 +154,7 @@ public class ConsoleApp {
             Match m = new Match(t, team1, team2, date, stage);
             matchService.addMatch(m);
             System.out.println("Матч добавлен. ID=" + m.getId());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
     }
@@ -212,6 +226,7 @@ public class ConsoleApp {
     private void addTournament() {
         if (!requireAdmin()) return;
         String name = readNonEmpty("Название турнира: ");
+//        String name = "Нижний Новгород";
         LocalDate start = readDate("Дата начала (dd.MM.yyyy): ");
         LocalDate end = readDate("Дата окончания (dd.MM.yyyy): ");
         try {
@@ -334,24 +349,46 @@ public class ConsoleApp {
         }
     }
 
-    private int readInt(String prompt) {
+        private static final int MAX_INPUT_LENGTH = 100;
+    private static final int MAX_SAFE_INT = 100_000;
+
+    private String readLineSafe(String prompt) {
         while (true) {
             System.out.print(prompt);
-            String line = scanner.nextLine().trim();
+            String line = scanner.nextLine();
+            if (line.length() > MAX_INPUT_LENGTH) {
+                System.out.println("Ошибка: Неверный ввод (слишком длинное предложение, лимит " + MAX_INPUT_LENGTH + " символов). Ввод сброшен.");
+                continue;
+            }
+            return line.trim();
+        }
+    }
+
+    private int readInt(String prompt) {
+        while (true) {
+            String line = readLineSafe(prompt);
+            if (line.length() > 6) {
+                System.out.println("Ошибка: Неверный ввод (число слишком большое). Ввод сброшен.");
+                continue;
+            }
             try {
-                return Integer.parseInt(line);
+                int val = Integer.parseInt(line);
+                if (val < 0 || val > MAX_SAFE_INT) {
+                    System.out.println("Ошибка: Неверный ввод (число вне допустимого диапазона).");
+                    continue;
+                }
+                return val;
             } catch (NumberFormatException e) {
-                System.out.println("Введите целое число.");
+                System.out.println("Ошибка: Неверный ввод. Введите целое число.");
             }
         }
     }
 
     private String readNonEmpty(String prompt) {
         while (true) {
-            System.out.print(prompt);
-            String line = scanner.nextLine().trim();
+            String line = readLineSafe(prompt);
             if (!line.isEmpty()) return line;
-            System.out.println("Поле не может быть пустым.");
+            System.out.println("Ошибка: Неверный ввод. Поле не может быть пустым.");
         }
     }
 

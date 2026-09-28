@@ -4,6 +4,9 @@ import pksmatches.model.User;
 import pksmatches.model.enums.UserRole;
 import pksmatches.repository.UserRepository;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +49,20 @@ public class UserService {
     }
 
     private String hash(String password) {
-        return Integer.toHexString(password.hashCode());
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encodedHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : encodedHash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Ошибка алгоритма хэширования SHA-256", e);
+        }
     }
 }
