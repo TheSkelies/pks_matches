@@ -6,21 +6,26 @@ import pksmatches.model.User;
 import pksmatches.model.enums.MatchStatus;
 import pksmatches.model.enums.TournamentStage;
 import pksmatches.model.enums.UserRole;
-import pksmatches.src.main.java.pksmatches.repository.MatchRepository;
+import pksmatches.repository.MatchRepository;
 import pksmatches.repository.TournamentRepository;
 import pksmatches.repository.UserRepository;
 import pksmatches.repository.impl.MatchRepositoryJdbc;
 import pksmatches.repository.impl.TournamentRepositoryJdbc;
 import pksmatches.repository.impl.UserRepositoryJdbc;
 import pksmatches.service.MatchService;
+import pksmatches.service.StatisticsService;
 import pksmatches.service.TournamentService;
 import pksmatches.service.UserService;
+import pksmatches.util.ExcelExporter;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class ConsoleApp {
@@ -32,6 +37,7 @@ public class ConsoleApp {
     private final MatchService matchService;
     private final TournamentService tournamentService;
     private final UserService userService;
+    private final StatisticsService statisticsService;
 
     private User currentUser;
 
@@ -43,6 +49,7 @@ public class ConsoleApp {
         this.matchService = new MatchService(matchRepository);
         this.tournamentService = new TournamentService(tournamentRepository);
         this.userService = new UserService(userRepository);
+        this.statisticsService = new StatisticsService(matchService, tournamentService, userService);
     }
 
     public void run() {
@@ -70,6 +77,10 @@ public class ConsoleApp {
                 case 10 -> addTournament();
                 case 11 -> listUsers();
                 case 12 -> addUser();
+                case 13 -> statisticsService.printStatistics();
+                case 14 -> sortMatchesMenu();
+                case 15 -> sortTournamentsMenu();
+                case 16 -> exportToExcel();
                 case 0 -> running = false;
                 default -> System.out.println("Неверный пункт меню.");
             }
@@ -93,6 +104,10 @@ public class ConsoleApp {
         System.out.println("10. Добавить турнир");
         System.out.println("11. Список пользователей");
         System.out.println("12. Добавить пользователя");
+        System.out.println("13. Статистика");
+        System.out.println("14. Сортировка матчей");
+        System.out.println("15. Сортировка турниров");
+        System.out.println("16. Экспорт в Excel");
         System.out.println("0. Выход");
     }
 
@@ -203,9 +218,10 @@ public class ConsoleApp {
             LocalDate endDate = t.getEndDate();
 
             String formattedStartDate = startDate.format(DATE_FMT);
-            String formattedEndDate = endDate.format(DATE_FMT);
+            String formattedEndDate = endDate != null ? endDate.format(DATE_FMT) : "—";
 
-            System.out.println("Турнир " + name + " начинается " + formattedStartDate + ", заканчивается " + formattedEndDate);
+            System.out.println("Турнир " + name + " начинается " + formattedStartDate
+                    + ", заканчивается " + formattedEndDate);
         }
     }
 
@@ -263,6 +279,97 @@ public class ConsoleApp {
         return true;
     }
 
+    // ---------- НОВОЕ: сортировка матчей ----------
+
+    private void sortMatchesMenu() {
+        System.out.println();
+        System.out.println("Сортировка матчей:");
+        System.out.println("1. По дате (возрастание)");
+        System.out.println("2. По дате (убывание)");
+        System.out.println("3. По турниру (название)");
+        System.out.println("4. По статусу");
+        int choice = readInt("Выбор: ");
+
+        List<Match> list = matchService.getAllMatches();
+        if (list.isEmpty()) {
+            System.out.println("Матчей нет.");
+            return;
+        }
+
+        switch (choice) {
+            case 1 -> list.sort(Comparator.comparing(Match::getMatchDate));
+            case 2 -> list.sort(Comparator.comparing(Match::getMatchDate).reversed());
+            case 3 -> list.sort(Comparator.comparing(
+                    m -> m.getTournament() != null ? m.getTournament().getName() : "",
+                    String.CASE_INSENSITIVE_ORDER));
+            case 4 -> list.sort(Comparator.comparing(m -> m.getStatus() != null
+                    ? m.getStatus().ordinal() : Integer.MAX_VALUE));
+            default -> {
+                System.out.println("Неверный выбор.");
+                return;
+            }
+        }
+        printMatches(list);
+    }
+
+    // ---------- НОВОЕ: сортировка турниров ----------
+
+    private void sortTournamentsMenu() {
+        System.out.println();
+        System.out.println("Сортировка турниров:");
+        System.out.println("1. По названию (А-Я)");
+        System.out.println("2. По названию (Я-А)");
+        System.out.println("3. По дате начала (возрастание)");
+        System.out.println("4. По дате начала (убывание)");
+        int choice = readInt("Выбор: ");
+
+        List<Tournament> list = tournamentService.getAll();
+        if (list.isEmpty()) {
+            System.out.println("Турниров нет.");
+            return;
+        }
+
+        switch (choice) {
+            case 1 -> list.sort(Comparator.comparing(Tournament::getName, String.CASE_INSENSITIVE_ORDER));
+            case 2 -> list.sort(Comparator.comparing(Tournament::getName, String.CASE_INSENSITIVE_ORDER).reversed());
+            case 3 -> list.sort(Comparator.comparing(Tournament::getStartDate));
+            case 4 -> list.sort(Comparator.comparing(Tournament::getStartDate).reversed());
+            default -> {
+                System.out.println("Неверный выбор.");
+                return;
+            }
+        }
+        for (Tournament t : list) {
+            String name = t.getName();
+            String start = t.getStartDate() != null ? t.getStartDate().format(DATE_FMT) : "—";
+            String end = t.getEndDate() != null ? t.getEndDate().format(DATE_FMT) : "—";
+            System.out.println("Турнир " + name + " (" + start + " — " + end + ")");
+        }
+    }
+
+    // ---------- НОВОЕ: экспорт в Excel ----------
+
+    private void exportToExcel() {
+        System.out.print("Путь к файлу (Enter — export.xlsx): ");
+        String path = scanner.nextLine().trim();
+        if (path.isEmpty()) path = "export.xlsx";
+
+        try {
+            ExcelExporter.exportAll(
+                    path,
+                    tournamentService.getAll(),
+                    matchService.getAllMatches(),
+                    userService.getAll(),
+                    statisticsService.getStatistics()
+            );
+            System.out.println("Экспорт завершён. Файл: " + path);
+        } catch (IOException e) {
+            System.out.println("Ошибка экспорта: " + e.getMessage());
+        }
+    }
+
+    // ---------- Вспомогательные методы ----------
+
     private Tournament selectTournament() {
         List<Tournament> list = tournamentService.getAll();
         if (list.isEmpty()) {
@@ -270,7 +377,7 @@ public class ConsoleApp {
             return null;
         }
         for (int i = 0; i < list.size(); i++) {
-            System.out.println((i+1) + ". " + list.get(i).getName());
+            System.out.println(list.get(i).getId() + ". " + list.get(i).getName());
         }
         int idx = readInt("Выберите турнир: ") - 1;
         if (idx < 0 || idx >= list.size()) {
@@ -287,7 +394,7 @@ public class ConsoleApp {
             return null;
         }
         for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + "Матч команд " + list.get(i).getTeam1() + " и " + list.get(i).getTeam2());
+            System.out.println((i + 1) + ". " + list.get(i));
         }
         int idx = readInt("Выберите матч: ") - 1;
         if (idx < 0 || idx >= list.size()) {
@@ -315,21 +422,17 @@ public class ConsoleApp {
             if (status == MatchStatus.SCHEDULED) {
                 System.out.println("Матч команд " + team1 + " и " + team2 + " запланирован на " + matchDate + " стадии " +
                         stage + "\n" + "Турнир: " + tournament.getName());
-                System.out.println("===============");
             }
             else if (status == MatchStatus.CANCELLED) {
                 System.out.println("Матч команд " + team1 + " и " + team2 + " отменён" + "\n" + "Турнир: " + tournament.getName());
-                System.out.println("===============");
             }
             else if (status == MatchStatus.FINISHED) {
                 System.out.println("Матч команд " + team1 + " и " + team2 + " завершён со счётом " + score1 + ":" + score2
                         + "\n" + "Турнир: " + tournament.getName());
-                System.out.println("===============");
             }
             else if (status == MatchStatus.LIVE) {
                 System.out.println("Матч команд " + team1 + " и " + team2 + " идёт со счётом " + score1 + ":" + score2
                         + "\n" + "Турнир: " + tournament.getName());
-                System.out.println("===============");
             }
         }
     }
