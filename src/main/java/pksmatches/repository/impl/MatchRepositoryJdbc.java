@@ -4,7 +4,7 @@ import pksmatches.model.Match;
 import pksmatches.model.Tournament;
 import pksmatches.model.enums.MatchStatus;
 import pksmatches.model.enums.TournamentStage;
-import pksmatches.src.main.java.pksmatches.repository.MatchRepository;
+import pksmatches.repository.MatchRepository;
 import pksmatches.util.DatabaseManager;
 
 import java.sql.*;
@@ -76,7 +76,7 @@ public class MatchRepositoryJdbc implements MatchRepository {
     @Override
     public List<Match> findByStatus(MatchStatus status) {
         List<Match> list = new ArrayList<>();
-        String sql = BASE_SELECT + " WHERE m.status = CAST(? AS matchstatus)";
+        String sql = BASE_SELECT + " WHERE m.status = CAST(? AS match_status)";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, status.name());
@@ -94,10 +94,9 @@ public class MatchRepositoryJdbc implements MatchRepository {
     @Override
     public Match save(Match match) {
         String sql = "INSERT INTO matches (tournament_id, team1, team2, match_date, stage, status, score1, score2) " +
-                "VALUES (?, ?, ?, ?, CAST(? AS tournamentstage), CAST(? AS matchstatus), ?, ?)";
+                "VALUES (?, ?, ?, ?, CAST(? AS match_stage), CAST(? AS match_status), ?, ?)";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
             ps.setInt(1, match.getTournament().getId());
             ps.setString(2, match.getTeam1());
             ps.setString(3, match.getTeam2());
@@ -106,9 +105,7 @@ public class MatchRepositoryJdbc implements MatchRepository {
             ps.setString(6, match.getStatus().name());
             ps.setInt(7, match.getScore1());
             ps.setInt(8, match.getScore2());
-
             ps.executeUpdate();
-
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
                     match.setId(keys.getInt(1));
@@ -123,11 +120,10 @@ public class MatchRepositoryJdbc implements MatchRepository {
     @Override
     public void update(Match match) {
         String sql = "UPDATE matches SET tournament_id = ?, team1 = ?, team2 = ?, match_date = ?, " +
-                "stage = CAST(? AS tournamentstage), status = CAST(? AS matchstatus), " +
+                "stage = CAST(? AS match_stage), status = CAST(? AS match_status), " +
                 "score1 = ?, score2 = ? WHERE id = ?";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
-
             ps.setInt(1, match.getTournament().getId());
             ps.setString(2, match.getTeam1());
             ps.setString(3, match.getTeam2());
@@ -137,7 +133,6 @@ public class MatchRepositoryJdbc implements MatchRepository {
             ps.setInt(7, match.getScore1());
             ps.setInt(8, match.getScore2());
             ps.setInt(9, match.getId());
-
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Ошибка при обновлении матча", e);
@@ -161,20 +156,15 @@ public class MatchRepositoryJdbc implements MatchRepository {
         String team1 = rs.getString("team1");
         String team2 = rs.getString("team2");
         LocalDateTime matchDate = rs.getTimestamp("match_date").toLocalDateTime();
-
         TournamentStage stage = TournamentStage.valueOf(rs.getString("stage"));
         MatchStatus status = MatchStatus.valueOf(rs.getString("status"));
-
         int score1 = rs.getInt("score1");
         int score2 = rs.getInt("score2");
-
         int tournamentId = rs.getInt("tournament_id");
         String tournamentName = rs.getString("tournament_name");
         LocalDate startDate = rs.getDate("start_date").toLocalDate();
-
         Date endDateSql = rs.getDate("end_date");
         LocalDate endDate = (endDateSql != null) ? endDateSql.toLocalDate() : null;
-
         Tournament tournament = new Tournament(tournamentId, tournamentName, startDate, endDate);
         return new Match(id, tournament, team1, team2, matchDate, stage, status, score1, score2);
     }

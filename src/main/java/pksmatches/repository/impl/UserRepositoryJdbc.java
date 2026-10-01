@@ -14,7 +14,7 @@ public class UserRepositoryJdbc implements UserRepository {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        String sql = "SELECT id, username, password_hash, role FROM users WHERE LOWER(username) = LOWER(?)";
+        String sql = "SELECT id, username, password_hash, role::text AS role FROM users WHERE LOWER(username) = LOWER(?)";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, username);
@@ -22,7 +22,7 @@ public class UserRepositoryJdbc implements UserRepository {
                 if (rs.next()) return Optional.of(mapRow(rs));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Ошибка поиска пользователя по логину", e);
         }
         return Optional.empty();
     }
@@ -30,20 +30,20 @@ public class UserRepositoryJdbc implements UserRepository {
     @Override
     public List<User> findAll() {
         List<User> list = new ArrayList<>();
-        String sql = "SELECT id, username, password_hash, role FROM users";
+        String sql = "SELECT id, username, password_hash, role::text AS role FROM users";
         try (Connection c = DatabaseManager.getConnection();
              Statement st = c.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) list.add(mapRow(rs));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Ошибка получения списка пользователей", e);
         }
         return list;
     }
 
     @Override
     public User save(User user) {
-        String sql = "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO users (username, password_hash, role) VALUES (?, ?, CAST(? AS user_role))";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getUsername());
@@ -55,13 +55,13 @@ public class UserRepositoryJdbc implements UserRepository {
             }
             return user;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Ошибка сохранения пользователя", e);
         }
     }
 
     @Override
     public void update(User user) {
-        String sql = "UPDATE users SET username = ?, password_hash = ?, role = ? WHERE id = ?";
+        String sql = "UPDATE users SET username = ?, password_hash = ?, role = CAST(? AS user_role) WHERE id = ?";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
@@ -70,7 +70,7 @@ public class UserRepositoryJdbc implements UserRepository {
             ps.setInt(4, user.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Ошибка обновления пользователя", e);
         }
     }
 
@@ -82,7 +82,7 @@ public class UserRepositoryJdbc implements UserRepository {
             ps.setString(1, username);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Ошибка удаления пользователя", e);
         }
     }
 

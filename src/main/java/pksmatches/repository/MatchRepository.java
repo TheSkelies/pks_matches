@@ -1,7 +1,8 @@
-package pksmatches.src.main.java.pksmatches.repository;
+package pksmatches.repository;
 
 import pksmatches.model.Match;
 import pksmatches.model.enums.MatchStatus;
+
 import java.util.List;
 import java.util.Optional;
 

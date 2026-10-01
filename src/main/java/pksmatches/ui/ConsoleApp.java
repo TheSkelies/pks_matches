@@ -6,7 +6,7 @@ import pksmatches.model.User;
 import pksmatches.model.enums.MatchStatus;
 import pksmatches.model.enums.TournamentStage;
 import pksmatches.model.enums.UserRole;
-import pksmatches.src.main.java.pksmatches.repository.MatchRepository;
+import pksmatches.repository.MatchRepository;
 import pksmatches.repository.TournamentRepository;
 import pksmatches.repository.UserRepository;
 import pksmatches.repository.impl.MatchRepositoryJdbc;
@@ -16,6 +16,7 @@ import pksmatches.service.MatchService;
 import pksmatches.service.TournamentService;
 import pksmatches.service.UserService;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,8 +28,10 @@ public class ConsoleApp {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private static final int MAX_INPUT_LENGTH = 100;
+    private static final int MAX_SAFE_INT = 100_000;
 
-    private final Scanner scanner = new Scanner(System.in, java.nio.charset.StandardCharsets.UTF_8);
+    private final Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
     private final MatchService matchService;
     private final TournamentService tournamentService;
     private final UserService userService;
@@ -36,21 +39,21 @@ public class ConsoleApp {
     private User currentUser;
 
     public ConsoleApp() {
-        MatchRepository matchRepository = new MatchRepositoryJdbc();
-        TournamentRepository tournamentRepository = new TournamentRepositoryJdbc();
         UserRepository userRepository = new UserRepositoryJdbc();
+        TournamentRepository tournamentRepository = new TournamentRepositoryJdbc();
+        MatchRepository matchRepository = new MatchRepositoryJdbc();
 
-        this.matchService = new MatchService(matchRepository);
-        this.tournamentService = new TournamentService(tournamentRepository);
         this.userService = new UserService(userRepository);
+        this.tournamentService = new TournamentService(tournamentRepository);
+        this.matchService = new MatchService(matchRepository);
     }
 
     public void run() {
         System.out.println("=== Агрегатор матчей ===");
-
-        if (!login()) {
-            System.out.println("Выход.");
-            return;
+        while (currentUser == null) {
+            if (!login()) {
+                System.out.println("Попробуйте снова.");
+            }
         }
 
         boolean running = true;
@@ -58,7 +61,7 @@ public class ConsoleApp {
             printMenu();
             int choice = readInt("Выбор: ");
             switch (choice) {
-                case 1 -> listMatches();
+                case 1 -> listAllMatches();
                 case 2 -> listLiveMatches();
                 case 3 -> listMatchesByTournament();
                 case 4 -> addMatch();
@@ -78,7 +81,7 @@ public class ConsoleApp {
         System.out.println("До свидания.");
     }
 
-        private void logout() {
+    private void logout() {
         System.out.println("Выход из профиля " + currentUser.getUsername() + ".");
         currentUser = null;
         while (currentUser == null) {
@@ -111,12 +114,9 @@ public class ConsoleApp {
     }
 
     private boolean login() {
-        System.out.print("Логин: ");
-        String login = scanner.nextLine().trim();
-        System.out.print("Пароль: ");
-        String password = scanner.nextLine().trim();
-
-        User user = userService.authenticate(login, password);
+        String username = readNonEmpty("Логин: ");
+        String password = readPassword("Пароль: ");
+        User user = userService.authenticate(username, password);
         if (user == null) {
             System.out.println("Неверный логин или пароль.");
             return false;
@@ -126,7 +126,7 @@ public class ConsoleApp {
         return true;
     }
 
-    private void listMatches() {
+    private void listAllMatches() {
         printMatches(matchService.getAllMatches());
     }
 
@@ -144,12 +144,14 @@ public class ConsoleApp {
         if (!requireAdmin()) return;
         Tournament t = selectTournament();
         if (t == null) return;
-
         String team1 = readNonEmpty("Команда 1: ");
         String team2 = readNonEmpty("Команда 2: ");
+        if (team1.equalsIgnoreCase(team2)) {
+            System.out.println("Ошибка: Команда не может играть сама с собой.");
+            return;
+        }
         LocalDateTime date = readDateTime("Дата и время (dd.MM.yyyy HH:mm): ");
         TournamentStage stage = readStage();
-
         try {
             Match m = new Match(t, team1, team2, date, stage);
             matchService.addMatch(m);
@@ -160,32 +162,47 @@ public class ConsoleApp {
     }
 
     private void startMatch() {
+        if (!requireAdmin()) return;
         Match m = selectMatch();
         if (m == null) return;
         try {
             matchService.startLive(m.getId());
             System.out.println("Матч переведён в статус LIVE.");
-        } catch (IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
     }
 
     private void finishMatch() {
+        if (!requireAdmin()) return;
         Match m = selectMatch();
         if (m == null) return;
         try {
             matchService.finish(m.getId());
             System.out.println("Матч завершён.");
-        } catch (IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
     }
 
     private void updateScore() {
+        if (!requireAdmin()) return;
         Match m = selectMatch();
         if (m == null) return;
-        int s1 = readInt("Счёт команды 1: ");
-        int s2 = readInt("Счёт команды 2: ");
+        if (m.getStatus() == MatchStatus.FINISHED) {
+            System.out.println("Ошибка: Нельзя менять счёт завершённого матча.");
+            return;
+        }
+        if (m.getStatus() == MatchStatus.CANCELLED) {
+            System.out.println("Ошибка: Нельзя менять счёт отменённого матча.");
+            return;
+        }
+        if (m.getStatus() == MatchStatus.SCHEDULED) {
+            System.out.println("Ошибка: Нельзя менять счёт запланированного матча. Сначала начните матч.");
+            return;
+        }
+        int s1 = readInt("Счёт " + m.getTeam1() + ": ");
+        int s2 = readInt("Счёт " + m.getTeam2() + ": ");
         try {
             matchService.updateScore(m.getId(), s1, s2);
             System.out.println("Счёт обновлён.");
@@ -195,12 +212,13 @@ public class ConsoleApp {
     }
 
     private void cancelMatch() {
+        if (!requireAdmin()) return;
         Match m = selectMatch();
         if (m == null) return;
         try {
             matchService.cancel(m.getId());
             System.out.println("Матч отменён.");
-        } catch (IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
     }
@@ -212,21 +230,15 @@ public class ConsoleApp {
             return;
         }
         for (Tournament t : list) {
-            String name = t.getName();
-            LocalDate startDate = t.getStartDate();
-            LocalDate endDate = t.getEndDate();
-
-            String formattedStartDate = startDate.format(DATE_FMT);
-            String formattedEndDate = endDate.format(DATE_FMT);
-
-            System.out.println("Турнир " + name + " начинается " + formattedStartDate + ", заканчивается " + formattedEndDate);
+            String end = t.getEndDate() != null ? t.getEndDate().format(DATE_FMT) : "не указана";
+            System.out.println(t.getId() + ". " + t.getName()
+                    + " (" + t.getStartDate().format(DATE_FMT) + " — " + end + ")");
         }
     }
 
     private void addTournament() {
         if (!requireAdmin()) return;
         String name = readNonEmpty("Название турнира: ");
-//        String name = "Нижний Новгород";
         LocalDate start = readDate("Дата начала (dd.MM.yyyy): ");
         LocalDate end = readDate("Дата окончания (dd.MM.yyyy): ");
         try {
@@ -241,23 +253,19 @@ public class ConsoleApp {
     private void listUsers() {
         if (!requireAdmin()) return;
         for (User u : userService.getAll()) {
-            int id = u.getId();
-            String username = u.getUsername();
-            UserRole role = u.getRole();
-
-            System.out.println(id + ". Пользователь " + username + " имеет роль " + role);
+            System.out.println(u.getId() + ". Пользователь " + u.getUsername() + " имеет роль " + u.getRole());
         }
     }
 
     private void addUser() {
         if (!requireAdmin()) return;
         String username = readNonEmpty("Логин: ");
-        String password = readNonEmpty("Пароль: ");
+        String password = readPassword("Пароль: ");
         System.out.print("Роль (ADMIN/USER/GUEST, по умолчанию USER): ");
-        String roleStr = scanner.nextLine().trim().toUpperCase();
+        String roleStr = readLineSafe("");
         UserRole role;
         try {
-            role = roleStr.isEmpty() ? UserRole.USER : UserRole.valueOf(roleStr);
+            role = roleStr.isEmpty() ? UserRole.USER : UserRole.valueOf(roleStr.toUpperCase());
         } catch (IllegalArgumentException e) {
             System.out.println("Неверная роль. Установлена USER.");
             role = UserRole.USER;
@@ -285,7 +293,7 @@ public class ConsoleApp {
             return null;
         }
         for (int i = 0; i < list.size(); i++) {
-            System.out.println((i+1) + ". " + list.get(i).getName());
+            System.out.println((i + 1) + ". " + list.get(i).getName());
         }
         int idx = readInt("Выберите турнир: ") - 1;
         if (idx < 0 || idx >= list.size()) {
@@ -302,7 +310,7 @@ public class ConsoleApp {
             return null;
         }
         for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + "Матч команд " + list.get(i).getTeam1() + " и " + list.get(i).getTeam2());
+            System.out.println((i + 1) + ". Матч команд " + list.get(i).getTeam1() + " и " + list.get(i).getTeam2());
         }
         int idx = readInt("Выберите матч: ") - 1;
         if (idx < 0 || idx >= list.size()) {
@@ -327,41 +335,42 @@ public class ConsoleApp {
             int score1 = m.getScore1();
             int score2 = m.getScore2();
 
-            if (status == MatchStatus.SCHEDULED) {
-                System.out.println("Матч команд " + team1 + " и " + team2 + " запланирован на " + matchDate + " стадии " +
-                        stage + "\n" + "Турнир: " + tournament.getName());
-                System.out.println("===============");
+            String tourName = tournament != null ? tournament.getName() : "Не указан";
+            switch (status) {
+                case SCHEDULED -> System.out.println("Матч команд " + team1 + " и " + team2 +
+                        " запланирован на " + matchDate + " стадии " + stage + "\nТурнир: " + tourName);
+                case CANCELLED -> System.out.println("Матч команд " + team1 + " и " + team2 +
+                        " отменён\nТурнир: " + tourName);
+                case FINISHED -> System.out.println("Матч команд " + team1 + " и " + team2 +
+                        " завершён со счётом " + score1 + ":" + score2 + "\nТурнир: " + tourName);
+                case LIVE -> System.out.println("Матч команд " + team1 + " и " + team2 +
+                        " идёт со счётом " + score1 + ":" + score2 + "\nТурнир: " + tourName);
             }
-            else if (status == MatchStatus.CANCELLED) {
-                System.out.println("Матч команд " + team1 + " и " + team2 + " отменён" + "\n" + "Турнир: " + tournament.getName());
-                System.out.println("===============");
-            }
-            else if (status == MatchStatus.FINISHED) {
-                System.out.println("Матч команд " + team1 + " и " + team2 + " завершён со счётом " + score1 + ":" + score2
-                        + "\n" + "Турнир: " + tournament.getName());
-                System.out.println("===============");
-            }
-            else if (status == MatchStatus.LIVE) {
-                System.out.println("Матч команд " + team1 + " и " + team2 + " идёт со счётом " + score1 + ":" + score2
-                        + "\n" + "Турнир: " + tournament.getName());
-                System.out.println("===============");
-            }
+            System.out.println("===============");
         }
     }
 
-        private static final int MAX_INPUT_LENGTH = 100;
-    private static final int MAX_SAFE_INT = 100_000;
-
     private String readLineSafe(String prompt) {
         while (true) {
-            System.out.print(prompt);
+            if (!prompt.isEmpty()) {
+                System.out.print(prompt);
+            }
             String line = scanner.nextLine();
             if (line.length() > MAX_INPUT_LENGTH) {
-                System.out.println("Ошибка: Неверный ввод (слишком длинное предложение, лимит " + MAX_INPUT_LENGTH + " символов). Ввод сброшен.");
+                System.out.println("Ошибка: Неверный ввод (слишком длинное предложение, лимит " +
+                        MAX_INPUT_LENGTH + " символов). Ввод сброшен.");
                 continue;
             }
             return line.trim();
         }
+    }
+
+    private String readPassword(String prompt) {
+        if (System.console() != null) {
+            char[] pass = System.console().readPassword(prompt);
+            return pass != null ? new String(pass).trim() : "";
+        }
+        return readLineSafe(prompt);
     }
 
     private int readInt(String prompt) {
@@ -374,7 +383,7 @@ public class ConsoleApp {
             try {
                 int val = Integer.parseInt(line);
                 if (val < 0 || val > MAX_SAFE_INT) {
-                    System.out.println("Ошибка: Неверный ввод (число вне допустимого диапазона).");
+                    System.out.println("Ошибка: Неверный ввод (число вне допустимого диапазона 0.." + MAX_SAFE_INT + ").");
                     continue;
                 }
                 return val;
@@ -394,24 +403,22 @@ public class ConsoleApp {
 
     private LocalDate readDate(String prompt) {
         while (true) {
-            System.out.print(prompt);
-            String line = scanner.nextLine().trim();
+            String line = readLineSafe(prompt);
             try {
                 return LocalDate.parse(line, DATE_FMT);
             } catch (DateTimeParseException e) {
-                System.out.println("Неверный формат даты.");
+                System.out.println("Неверный формат даты (ожидается dd.MM.yyyy).");
             }
         }
     }
 
     private LocalDateTime readDateTime(String prompt) {
         while (true) {
-            System.out.print(prompt);
-            String line = scanner.nextLine().trim();
+            String line = readLineSafe(prompt);
             try {
                 return LocalDateTime.parse(line, DATETIME_FMT);
             } catch (DateTimeParseException e) {
-                System.out.println("Неверный формат даты и времени.");
+                System.out.println("Неверный формат даты и времени (ожидается dd.MM.yyyy HH:mm).");
             }
         }
     }
@@ -419,11 +426,11 @@ public class ConsoleApp {
     private TournamentStage readStage() {
         while (true) {
             System.out.print("Этап (GROUP/QUARTER_FINAL/SEMI_FINAL/FINAL): ");
-            String line = scanner.nextLine().trim().toUpperCase();
+            String line = readLineSafe("").toUpperCase();
             try {
                 return TournamentStage.valueOf(line);
             } catch (IllegalArgumentException e) {
-                System.out.println("Неверный этап.");
+                System.out.println("Неверный этап (GROUP/QUARTER_FINAL/SEMI_FINAL/FINAL).");
             }
         }
     }

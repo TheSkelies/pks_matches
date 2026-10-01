@@ -3,7 +3,7 @@ package pksmatches.service;
 import pksmatches.model.Match;
 import pksmatches.model.Tournament;
 import pksmatches.model.enums.MatchStatus;
-import pksmatches.src.main.java.pksmatches.repository.MatchRepository;
+import pksmatches.repository.MatchRepository;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -21,25 +21,36 @@ public class MatchService {
     }
 
     public void addMatch(Match match) {
-        if (match == null) throw new IllegalArgumentException("Матч не может быть null");
+        if (match == null) {
+            throw new IllegalArgumentException("Матч не может быть null");
+        }
         Tournament tournament = match.getTournament();
-        if (tournament == null) throw new IllegalArgumentException("Турнир обязателен");
+        if (tournament == null) {
+            throw new IllegalArgumentException("Турнир обязателен для создания матча");
+        }
+        if (match.getTeam1() == null || match.getTeam1().isBlank() ||
+            match.getTeam2() == null || match.getTeam2().isBlank()) {
+            throw new IllegalArgumentException("Названия команд не могут быть пустыми");
+        }
+        if (match.getTeam1().trim().equalsIgnoreCase(match.getTeam2().trim())) {
+            throw new IllegalArgumentException("Команда не может играть сама с собой (" + match.getTeam1() + ")");
+        }
+        if (match.getMatchDate() == null) {
+            throw new IllegalArgumentException("Дата и время матча обязательны");
+        }
 
         LocalDate matchDate = match.getMatchDate().toLocalDate();
 
-        // 1. Валидация: дата матча должна быть в границах дат турнира
-        if (matchDate.isBefore(tournament.getStartDate()) || 
+        if (matchDate.isBefore(tournament.getStartDate()) ||
             (tournament.getEndDate() != null && matchDate.isAfter(tournament.getEndDate()))) {
-            throw new IllegalArgumentException("Дата матча (" + matchDate + ") должна быть в пределах турнира (" 
+            throw new IllegalArgumentException("Дата матча (" + matchDate + ") должна быть в пределах турнира ("
                     + tournament.getStartDate() + " — " + tournament.getEndDate() + ")");
         }
 
-        // 2. Валидация: запрет добавления матча в завершившийся архивный турнир
         if (tournament.getEndDate() != null && tournament.getEndDate().isBefore(LocalDate.now())) {
             throw new IllegalStateException("Нельзя добавить матч: турнир уже завершился (" + tournament.getEndDate() + ")");
         }
 
-        // 4. Защита от коллизии расписания (интервал < 3 часов у одной команды)
         checkScheduleCollision(match);
 
         matchRepository.save(match);
@@ -51,18 +62,18 @@ public class MatchService {
             if (other.getStatus() == MatchStatus.CANCELLED) continue;
             if (other.getId() == match.getId()) continue;
 
-            boolean hasTeam1 = match.getTeam1().equalsIgnoreCase(other.getTeam1()) || 
+            boolean hasTeam1 = match.getTeam1().equalsIgnoreCase(other.getTeam1()) ||
                                match.getTeam1().equalsIgnoreCase(other.getTeam2());
-            boolean hasTeam2 = match.getTeam2().equalsIgnoreCase(other.getTeam1()) || 
+            boolean hasTeam2 = match.getTeam2().equalsIgnoreCase(other.getTeam1()) ||
                                match.getTeam2().equalsIgnoreCase(other.getTeam2());
 
             if (hasTeam1 || hasTeam2) {
                 long minutes = Math.abs(Duration.between(match.getMatchDate(), other.getMatchDate()).toMinutes());
                 if (minutes < 180) {
                     String teamName = hasTeam1 ? match.getTeam1() : match.getTeam2();
-                    throw new IllegalStateException("Коллизия расписания: команда \"" + teamName + 
-                            "\" уже участвует в матче #" + other.getId() + " (" + 
-                            other.getMatchDate().format(DT_FORMAT) + "). Интервал должен быть не менее 3 часов");
+                    throw new IllegalStateException("Коллизия расписания: команда \"" + teamName +
+                            "\" уже участвует в матче #" + other.getId() + " (" +
+                            other.getMatchDate().format(DT_FORMAT) + "). Интервал между играми команды должен быть не менее 3 часов");
                 }
             }
         }
@@ -81,6 +92,7 @@ public class MatchService {
     }
 
     public List<Match> getMatchesByTournament(Tournament tournament) {
+        if (tournament == null) return List.of();
         return matchRepository.findByTournamentId(tournament.getId());
     }
 
@@ -94,12 +106,27 @@ public class MatchService {
 
     public void startLive(int id) {
         Match m = getById(id);
+        if (m.getStatus() == MatchStatus.LIVE) {
+            throw new IllegalStateException("Матч уже идёт в прямом эфире");
+        }
+        if (m.getStatus() == MatchStatus.FINISHED) {
+            throw new IllegalStateException("Нельзя начать уже завершённый матч");
+        }
+        if (m.getStatus() == MatchStatus.CANCELLED) {
+            throw new IllegalStateException("Нельзя начать отменённый матч");
+        }
         m.startLive();
         matchRepository.update(m);
     }
 
     public void finish(int id) {
         Match m = getById(id);
+        if (m.getStatus() == MatchStatus.FINISHED) {
+            throw new IllegalStateException("Матч уже завершён");
+        }
+        if (m.getStatus() == MatchStatus.CANCELLED) {
+            throw new IllegalStateException("Нельзя завершить отменённый матч");
+        }
         m.finish();
         matchRepository.update(m);
     }
@@ -117,6 +144,9 @@ public class MatchService {
     }
 
     public void updateScore(int id, int score1, int score2) {
+        if (score1 < 0 || score2 < 0) {
+            throw new IllegalArgumentException("Счёт матча не может быть отрицательным");
+        }
         Match m = getById(id);
         if (m.getStatus() == MatchStatus.FINISHED) {
             throw new IllegalStateException("Нельзя менять счёт завершённого матча");
