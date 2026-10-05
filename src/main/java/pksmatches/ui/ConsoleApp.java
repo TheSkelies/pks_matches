@@ -15,7 +15,9 @@ import pksmatches.repository.impl.UserRepositoryJdbc;
 import pksmatches.service.MatchService;
 import pksmatches.service.TournamentService;
 import pksmatches.service.UserService;
+import pksmatches.util.ExcelExporter;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -74,6 +76,7 @@ public class ConsoleApp {
                 case 11 -> listUsers();
                 case 12 -> addUser();
                 case 13 -> logout();
+                case 14 -> exportToExcel();
                 case 0 -> running = false;
                 default -> System.out.println("Неверный пункт меню.");
             }
@@ -110,6 +113,7 @@ public class ConsoleApp {
         System.out.println("11. Список пользователей");
         System.out.println("12. Добавить пользователя");
         System.out.println("13. Сменить пользователя (Logout)");
+        System.out.println("14. Экспорт в Excel");
         System.out.println("0. Выход");
     }
 
@@ -432,6 +436,24 @@ public class ConsoleApp {
             } catch (IllegalArgumentException e) {
                 System.out.println("Неверный этап (GROUP/QUARTER_FINAL/SEMI_FINAL/FINAL).");
             }
+        }
+    }
+
+    private void exportToExcel() {
+        System.out.print("Имя файла (по умолчанию — export.xlsx): ");
+        String path = scanner.nextLine().trim();
+        if (path.isEmpty()) path = "export.xlsx";
+
+        try {
+            ExcelExporter.exportAll(
+                    path,
+                    tournamentService.getAll(),
+                    matchService.getAllMatches(),
+                    userService.getAll()
+            );
+            System.out.println("Экспорт завершён. Файл: " + path);
+        } catch (IOException e) {
+            System.out.println("Ошибка экспорта: " + e.getMessage());
         }
     }
 }
