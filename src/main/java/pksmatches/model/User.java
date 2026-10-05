@@ -28,7 +28,10 @@ public class User {
     }
 
     public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public void setId(int id) {
+        if (id < 0) throw new IllegalArgumentException("ID не может быть отрицательным");
+        this.id = id;
+    }
 
     public String getUsername() { return username; }
     public void setUsername(String username) {
