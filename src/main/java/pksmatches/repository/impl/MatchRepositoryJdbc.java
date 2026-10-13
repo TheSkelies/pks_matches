@@ -94,7 +94,7 @@ public class MatchRepositoryJdbc implements MatchRepository {
     @Override
     public Match save(Match match) {
         String sql = "INSERT INTO matches (tournament_id, team1, team2, match_date, stage, status, score1, score2) " +
-                "VALUES (?, ?, ?, ?, CAST(? AS tournamentstage), CAST(? AS matchstatus), ?, ?)";
+                "VALUES (?, ?, ?, ?, CAST(? AS matchstage), CAST(? AS matchstatus), ?, ?)";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, match.getTournament().getId());
@@ -120,7 +120,7 @@ public class MatchRepositoryJdbc implements MatchRepository {
     @Override
     public void update(Match match) {
         String sql = "UPDATE matches SET tournament_id = ?, team1 = ?, team2 = ?, match_date = ?, " +
-                "stage = CAST(? AS tournamentstage), status = CAST(? AS matchstatus), " +
+                "stage = CAST(? AS matchstage), status = CAST(? AS matchstatus), " +
                 "score1 = ?, score2 = ? WHERE id = ?";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {

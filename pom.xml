@@ -111,7 +111,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.example.match_agreagtor/com.example.match_agreagtor.HelloApplication</mainClass>
+                    <mainClass>com.example.match_agreagtor/com.example.match_agreagtor.MatchAggregatorApplication</mainClass>
                     <launcher>app</launcher>
                     <jlinkZipName>app</jlinkZipName>
                     <jlinkImageName>app</jlinkImageName>
@@ -126,7 +126,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.example.match_agreagtor.HelloApplication</mainClass>
+                            <mainClass>com.example.match_agreagtor.MatchAggregatorApplication</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
