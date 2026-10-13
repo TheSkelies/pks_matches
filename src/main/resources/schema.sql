@@ -3,14 +3,14 @@ DROP TABLE IF EXISTS matches CASCADE;
 DROP TABLE IF EXISTS tournaments CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
-DROP TYPE IF EXISTS user_role;
-DROP TYPE IF EXISTS match_status;
-DROP TYPE IF EXISTS match_stage;
+DROP TYPE IF EXISTS userrole;
+DROP TYPE IF EXISTS matchstatus;
+DROP TYPE IF EXISTS matchstage;
 
 -- Создание перечислений (ENUM)
-CREATE TYPE user_role AS ENUM ('ADMIN', 'USER', 'GUEST');
-CREATE TYPE match_status AS ENUM ('SCHEDULED', 'LIVE', 'FINISHED', 'CANCELLED');
-CREATE TYPE match_stage AS ENUM ('GROUP', 'QUARTER_FINAL', 'SEMI_FINAL', 'FINAL');
+CREATE TYPE userrole AS ENUM ('ADMIN', 'USER', 'GUEST');
+CREATE TYPE matchstatus AS ENUM ('SCHEDULED', 'LIVE', 'FINISHED', 'CANCELLED');
+CREATE TYPE matchstage AS ENUM ('GROUP', 'QUARTER_FINAL', 'SEMI_FINAL', 'FINAL');
 
 -- Таблица пользователей с проверкой уникальности логина и хэшированными паролями
 CREATE TABLE users (
