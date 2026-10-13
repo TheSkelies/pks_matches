@@ -76,7 +76,7 @@ public class MatchRepositoryJdbc implements MatchRepository {
     @Override
     public List<Match> findByStatus(MatchStatus status) {
         List<Match> list = new ArrayList<>();
-        String sql = BASE_SELECT + " WHERE m.status = CAST(? AS match_status)";
+        String sql = BASE_SELECT + " WHERE m.status = CAST(? AS matchstatus)";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, status.name());
@@ -94,7 +94,7 @@ public class MatchRepositoryJdbc implements MatchRepository {
     @Override
     public Match save(Match match) {
         String sql = "INSERT INTO matches (tournament_id, team1, team2, match_date, stage, status, score1, score2) " +
-                "VALUES (?, ?, ?, ?, CAST(? AS match_stage), CAST(? AS match_status), ?, ?)";
+                "VALUES (?, ?, ?, ?, CAST(? AS tournamentstage), CAST(? AS matchstatus), ?, ?)";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, match.getTournament().getId());
@@ -120,7 +120,7 @@ public class MatchRepositoryJdbc implements MatchRepository {
     @Override
     public void update(Match match) {
         String sql = "UPDATE matches SET tournament_id = ?, team1 = ?, team2 = ?, match_date = ?, " +
-                "stage = CAST(? AS match_stage), status = CAST(? AS match_status), " +
+                "stage = CAST(? AS tournamentstage), status = CAST(? AS matchstatus), " +
                 "score1 = ?, score2 = ? WHERE id = ?";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
