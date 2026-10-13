@@ -15,7 +15,7 @@ public class MatchAggregatorApplication extends Application {
         FXMLLoader loader = new FXMLLoader(
                 MatchAggregatorApplication.class.getResource("/fxml/login-view.fxml")
         );
-        Scene scene = new Scene(loader.load(), 420, 340);
+        Scene scene = new Scene(loader.load(), 500, 580);
         scene.getStylesheets().add(
                 Objects.requireNonNull(
                         getClass().getResource("/css/style.css")

@@ -21,12 +21,14 @@
             styleClass="main-root">
 
     <top>
-        <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="toolbar">
+        <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="toolbar">
             <padding>
-                <Insets top="10.0" right="12.0" bottom="10.0" left="12.0"/>
+                <Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/>
             </padding>
+            <Label text="⚽ Агрегатор матчей" styleClass="user-label"/>
             <Label fx:id="userLabel" styleClass="user-label"/>
             <Region HBox.hgrow="ALWAYS"/>
+            <Label text="🐐 Messi is the GOAT" styleClass="messi-label"/>
             <Button text="Обновить" onAction="#onRefreshClick" styleClass="secondary-button"/>
             <Button text="Экспорт CSV" onAction="#onExportClick" styleClass="secondary-button"/>
             <Button text="Выйти" onAction="#onLogoutClick" styleClass="danger-button"/>
@@ -41,15 +43,15 @@
                     <top>
                         <VBox spacing="8.0" styleClass="filter-panel">
                             <padding>
-                                <Insets top="10.0" right="12.0" bottom="10.0" left="12.0"/>
+                                <Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/>
                             </padding>
 
-                            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                            <HBox spacing="10.0" alignment="CENTER_LEFT">
                                 <Label text="Поиск:"/>
                                 <TextField fx:id="searchField"
                                            promptText="команда или турнир"
                                            onKeyReleased="#onSearchChanged"
-                                           prefWidth="260.0"/>
+                                           prefWidth="240.0"/>
 
                                 <Label text="Статус:"/>
                                 <ComboBox fx:id="statusFilter" promptText="Все" prefWidth="150.0"/>
@@ -87,7 +89,7 @@
                     <bottom>
                         <HBox spacing="8.0" styleClass="action-bar">
                             <padding>
-                                <Insets top="10.0" right="12.0" bottom="10.0" left="12.0"/>
+                                <Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/>
                             </padding>
                             <Button text="Добавить матч" onAction="#onAddMatchClick"
                                     styleClass="primary-button"/>
@@ -124,7 +126,7 @@
                     <bottom>
                         <HBox spacing="8.0" styleClass="action-bar">
                             <padding>
-                                <Insets top="10.0" right="12.0" bottom="10.0" left="12.0"/>
+                                <Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/>
                             </padding>
                             <Button text="Добавить турнир" onAction="#onAddTournamentClick"
                                     styleClass="primary-button"/>

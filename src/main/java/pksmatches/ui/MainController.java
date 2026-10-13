@@ -2,7 +2,6 @@ package pksmatches.ui;
 
 import com.example.match_agreagtor.MatchAggregatorApplication;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -44,17 +43,14 @@ public class MainController {
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private static final DateTimeFormatter D_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    // --- Toolbar ---
     @FXML private Label userLabel;
 
-    // --- Filters ---
     @FXML private TextField searchField;
     @FXML private ComboBox<MatchStatus> statusFilter;
     @FXML private ComboBox<Tournament> tournamentFilter;
     @FXML private DatePicker dateFromFilter;
     @FXML private DatePicker dateToFilter;
 
-    // --- Match table ---
     @FXML private TableView<Match> matchTable;
     @FXML private TableColumn<Match, Number> colId;
     @FXML private TableColumn<Match, String> colTournament;
@@ -65,7 +61,6 @@ public class MainController {
     @FXML private TableColumn<Match, String> colStatus;
     @FXML private TableColumn<Match, String> colScore;
 
-    // --- Tournament table ---
     @FXML private TableView<Tournament> tournamentTable;
     @FXML private TableColumn<Tournament, Number> colTId;
     @FXML private TableColumn<Tournament, String> colTName;
@@ -79,6 +74,7 @@ public class MainController {
     private final ObservableList<Tournament> tournaments = FXCollections.observableArrayList();
 
     private FilteredList<Match> filteredMatches;
+    private SortedList<Match> sortedMatches;
 
     private User currentUser;
 
@@ -99,7 +95,7 @@ public class MainController {
     public void setCurrentUser(User user) {
         this.currentUser = user;
         if (userLabel != null && user != null) {
-            userLabel.setText("Пользователь: " + user.getUsername() + " (" + user.getRole() + ")");
+            userLabel.setText("| " + user.getUsername() + " (" + user.getRole() + ")");
         }
     }
 
@@ -121,6 +117,7 @@ public class MainController {
                 new SimpleStringProperty(c.getValue().getScore1() + " : " + c.getValue().getScore2()));
 
         matchTable.setPlaceholder(new Label("Матчей не найдено"));
+        matchTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
 
     private void setupTournamentTable() {
@@ -132,6 +129,9 @@ public class MainController {
                 c.getValue().getEndDate() != null ? c.getValue().getEndDate().format(D_FMT) : "—"));
 
         tournamentTable.setPlaceholder(new Label("Турниров нет"));
+        tournamentTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
+        // ★ ГЛАВНОЕ ИСПРАВЛЕНИЕ БАГА С ТУРНИРАМИ:
         tournamentTable.setItems(tournaments);
     }
 
@@ -157,10 +157,17 @@ public class MainController {
                 tournamentFilter.setValue(selected);
             }
 
-            filteredMatches = new FilteredList<>(matches, m -> true);
-            SortedList<Match> sorted = new SortedList<>(filteredMatches);
-            sorted.comparatorProperty().bind(matchTable.comparatorProperty());
-            matchTable.setItems(sorted);
+            if (filteredMatches == null) {
+                filteredMatches = new FilteredList<>(matches, m -> true);
+            } else {
+                filteredMatches.setPredicate(m -> true);
+            }
+
+            if (sortedMatches == null) {
+                sortedMatches = new SortedList<>(filteredMatches);
+                sortedMatches.comparatorProperty().bind(matchTable.comparatorProperty());
+                matchTable.setItems(sortedMatches);
+            }
 
             applyFilters();
         } catch (RuntimeException e) {
@@ -484,7 +491,7 @@ public class MainController {
             );
             Parent root = loader.load();
 
-            Scene scene = new Scene(root, 420, 340);
+            Scene scene = new Scene(root, 500, 560);
             scene.getStylesheets().add(
                     Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm()
             );

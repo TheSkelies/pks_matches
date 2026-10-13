@@ -71,7 +71,7 @@ public class LoginController {
             MainController controller = loader.getController();
             controller.setCurrentUser(user);
 
-            Scene scene = new Scene(root, 1200, 720);
+            Scene scene = new Scene(root, 1280, 760);
             scene.getStylesheets().add(
                     Objects.requireNonNull(
                             getClass().getResource("/css/style.css")
@@ -79,12 +79,18 @@ public class LoginController {
             );
 
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setTitle("Агрегатор матчей — " + user.getUsername() + " (" + user.getRole() + ")");
+            stage.setTitle("⚽ Агрегатор матчей — " + user.getUsername() + " (" + user.getRole() + ")");
             stage.setScene(scene);
             stage.setResizable(true);
             stage.centerOnScreen();
-        } catch (IOException e) {
-            showError("Не удалось открыть главное окно: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            // Печатаем полный stacktrace в консоль — пригодится для отладки
+            e.printStackTrace();
+            String msg = e.getMessage();
+            if (msg == null && e.getCause() != null) {
+                msg = e.getCause().getMessage();
+            }
+            showError("Не удалось открыть главное окно: " + msg);
         }
     }
 
