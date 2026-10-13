@@ -19,3 +19,4 @@ module com.example.match_agreagtor {
     opens pksmatches.model to javafx.base;
     opens pksmatches.model.enums to javafx.fxml;
 }
+
