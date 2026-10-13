@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="pksmatches.ui.MatchFormController"
+      spacing="14.0"
+      styleClass="form-root">
+
+    <padding>
+        <Insets top="18.0" right="24.0" bottom="18.0" left="24.0"/>
+    </padding>
+
+    <Label fx:id="titleLabel" text="Матч" styleClass="form-title"/>
+
+    <GridPane hgap="12.0" vgap="10.0">
+        <columnConstraints>
+            <ColumnConstraints minWidth="130.0" prefWidth="130.0"/>
+            <ColumnConstraints minWidth="260.0" prefWidth="260.0"/>
+        </columnConstraints>
+
+        <Label text="Турнир:" styleClass="form-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="tournamentBox" maxWidth="Infinity"
+                  GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Команда 1:" styleClass="form-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="team1Field" promptText="название первой команды"
+                   GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Команда 2:" styleClass="form-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="team2Field" promptText="название второй команды"
+                   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="Дата:" styleClass="form-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <DatePicker fx:id="datePicker" maxWidth="Infinity"
+                    GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="Время (HH:mm):" styleClass="form-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="timeField" promptText="19:00"
+                   GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <Label text="Этап:" styleClass="form-label" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="stageBox" maxWidth="Infinity"
+                  GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+        <Label text="Статус:" styleClass="form-label" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="statusBox" maxWidth="Infinity"
+                  GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+        <Label text="Счёт:" styleClass="form-label" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+        <HBox spacing="8.0" alignment="CENTER_LEFT"
+              GridPane.rowIndex="7" GridPane.columnIndex="1">
+            <TextField fx:id="score1Field" promptText="0" prefWidth="80.0"/>
+            <Label text=":"/>
+            <TextField fx:id="score2Field" promptText="0" prefWidth="80.0"/>
+        </HBox>
+    </GridPane>
+
+    <Label fx:id="errorLabel"
+           styleClass="error-label"
+           wrapText="true"
+           visible="false"
+           managed="false"/>
+
+    <HBox spacing="10.0" alignment="CENTER_RIGHT">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Отмена" onAction="#onCancelClick" styleClass="secondary-button"/>
+        <Button text="Сохранить" onAction="#onSaveClick" defaultButton="true"
+                styleClass="primary-button"/>
+    </HBox>
+</VBox>

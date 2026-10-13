@@ -55,4 +55,18 @@ public class TournamentService {
         tournamentRepository.deleteById(id);
         return true;
     }
+
+
+    public void update(Tournament tournament) {
+        if (tournament == null) throw new IllegalArgumentException("Турнир не может быть null");
+        if (tournament.getId() <= 0) throw new IllegalArgumentException("Некорректный ID турнира");
+        if (tournament.getName() == null || tournament.getName().isBlank()) {
+            throw new IllegalArgumentException("Название турнира не может быть пустым");
+        }
+        if (tournament.getEndDate() != null
+                && tournament.getEndDate().isBefore(tournament.getStartDate())) {
+            throw new IllegalArgumentException("Дата окончания не может быть раньше даты начала");
+        }
+        tournamentRepository.update(tournament);
+    }
 }

@@ -1,0 +1,202 @@
+/* ==================== Общее ==================== */
+.root {
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #f5f6f8;
+}
+
+.main-root {
+    -fx-background-color: #f5f6f8;
+}
+
+/* ==================== Логин ==================== */
+.login-root {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #eef1f6);
+}
+
+.login-title {
+    -fx-text-fill: #1f2a44;
+    -fx-font-weight: bold;
+}
+
+.login-subtitle {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 14px;
+}
+
+.login-input {
+    -fx-pref-width: 280px;
+    -fx-padding: 8 10 8 10;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 1;
+    -fx-background-color: #ffffff;
+}
+
+.login-input:focused {
+    -fx-border-color: #2563eb;
+    -fx-border-width: 1.5;
+}
+
+.hint-label {
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 11px;
+}
+
+/* ==================== Кнопки ==================== */
+.primary-button {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 7 16 7 16;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: #1d4ed8;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #1e40af;
+}
+
+.secondary-button {
+    -fx-background-color: #e5e7eb;
+    -fx-text-fill: #111827;
+    -fx-background-radius: 6;
+    -fx-padding: 7 14 7 14;
+    -fx-cursor: hand;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #d1d5db;
+}
+
+.danger-button {
+    -fx-background-color: #dc2626;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 7 14 7 14;
+    -fx-cursor: hand;
+}
+
+.danger-button:hover {
+    -fx-background-color: #b91c1c;
+}
+
+/* ==================== Панели ==================== */
+.toolbar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent #e5e7eb transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.filter-panel {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent #e5e7eb transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.action-bar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.user-label {
+    -fx-text-fill: #1f2a44;
+    -fx-font-weight: bold;
+}
+
+/* ==================== Таблицы ==================== */
+.data-table {
+    -fx-background-color: white;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 1;
+}
+
+.data-table .column-header-background {
+    -fx-background-color: #f3f4f6;
+}
+
+.data-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent #e5e7eb #e5e7eb transparent;
+    -fx-border-width: 0 1 1 0;
+}
+
+.data-table .column-header .label {
+    -fx-text-fill: #374151;
+    -fx-font-weight: bold;
+}
+
+.data-table .table-row-cell:odd {
+    -fx-background-color: #fafbfc;
+}
+
+.data-table .table-cell {
+    -fx-text-fill: #111827;
+}
+
+.data-table .table-row-cell:selected .table-cell {
+    -fx-text-fill: #111827;
+}
+
+.data-table .table-row-cell:selected {
+    -fx-background-color: #dbeafe;
+    -fx-background-insets: 0;
+}
+.data-table .column-header .label {
+    -fx-text-fill: #374151;
+}
+
+/* ==================== Ошибки ==================== */
+.error-label {
+    -fx-text-fill: #b91c1c;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* ==================== Формы ==================== */
+.form-root {
+    -fx-background-color: #ffffff;
+}
+
+.form-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2a44;
+}
+
+.form-label {
+    -fx-text-fill: #374151;
+}
+
+/* ==================== Статистика ==================== */
+.stats-root {
+    -fx-background-color: #f5f6f8;
+}
+
+.stats-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 1;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 6, 0, 0, 2);
+}
+
+.stats-value {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2563eb;
+}
+
+.stats-title {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}

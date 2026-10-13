@@ -17,7 +17,7 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role user_role NOT NULL DEFAULT 'USER'
+    role userrole NOT NULL DEFAULT 'USER'
 );
 
 -- Таблица турниров с контролем корректности дат
@@ -36,8 +36,8 @@ CREATE TABLE matches (
     team1 VARCHAR(100) NOT NULL,
     team2 VARCHAR(100) NOT NULL,
     match_date TIMESTAMP NOT NULL,
-    status match_status NOT NULL DEFAULT 'SCHEDULED',
-    stage match_stage NOT NULL DEFAULT 'GROUP',
+    status matchstatus NOT NULL DEFAULT 'SCHEDULED',
+    stage matchstage NOT NULL DEFAULT 'GROUP',
     score1 INT NOT NULL DEFAULT 0,
     score2 INT NOT NULL DEFAULT 0,
     FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
