@@ -1,0 +1,47 @@
+services:
+  # ==========================================
+  # База данных PostgreSQL 16
+  # ==========================================
+  db:
+    image: postgres:16-alpine
+    container_name: pks-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pks_matches
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      # Постоянное хранилище базы
+      - pgdata:/var/lib/postgresql/data
+      # Автоматическое применение schema.sql при первом запуске контейнера!
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pks_matches"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # Java Консольное приложение
+  # ==========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pks-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Подключение к сервису 'db' внутри Docker-сети
+      DB_URL: jdbc:postgresql://db:5432/pks_matches
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    # Важно: интерактивный ввод и TTY для работы Scanner / консоли!
+    stdin_open: true
+    tty: true
+
+volumes:
+  pgdata:
