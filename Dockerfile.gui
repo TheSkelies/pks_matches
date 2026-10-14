@@ -1,0 +1,38 @@
+# ==========================================
+# Образ для запуска JavaFX GUI в Docker
+# ==========================================
+FROM eclipse-temurin:21-jdk
+
+# Установка необходимых пакетов для X11, JavaFX (GTK3, OpenGL) и noVNC веб-доступа
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xvfb \
+    x11vnc \
+    fluxbox \
+    novnc \
+    websockify \
+    libgtk-3-0 \
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    libasound2 \
+    libxtst6 \
+    libxrender1 \
+    maven \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Копируем pom.xml и кэшируем зависимости
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Копируем исходный код
+COPY src ./src
+
+# Копируем скрипт запуска
+COPY entrypoint-gui.sh /entrypoint-gui.sh
+RUN chmod +x /entrypoint-gui.sh
+
+# Порт noVNC веб-интерфейса
+EXPOSE 8080 5900
+
+ENTRYPOINT ["/entrypoint-gui.sh"]
