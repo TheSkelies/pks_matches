@@ -24,6 +24,7 @@ services:
       retries: 5
 
   # ==========================================
+<<<<<<< HEAD
   # 1. Фронтенд (JavaFX GUI) через встроенный Web/noVNC
   # Запуск: docker compose up app-gui
   # Открыть в браузере: http://localhost:8080/vnc.html
@@ -47,6 +48,9 @@ services:
   # ==========================================
   # 2. Консольная версия (CLI)
   # Запуск: docker compose run --rm app
+=======
+  # Java Консольное приложение
+>>>>>>> f3236d41038d12fe472de6a2c7e050f52f9de149
   # ==========================================
   app:
     build:
@@ -57,9 +61,17 @@ services:
       db:
         condition: service_healthy
     environment:
+<<<<<<< HEAD
       DB_URL: jdbc:postgresql://db:5432/pks_matches
       DB_USER: postgres
       DB_PASSWORD: postgres
+=======
+      # Подключение к сервису 'db' внутри Docker-сети
+      DB_URL: jdbc:postgresql://db:5432/pks_matches
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    # Важно: интерактивный ввод и TTY для работы Scanner / консоли!
+>>>>>>> f3236d41038d12fe472de6a2c7e050f52f9de149
     stdin_open: true
     tty: true
 
