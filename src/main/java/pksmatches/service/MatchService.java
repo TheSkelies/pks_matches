@@ -167,4 +167,11 @@ public class MatchService {
         matchRepository.deleteById(id);
         return true;
     }
+
+    
+    public void updateMatch(Match match) {
+        if (match == null) throw new IllegalArgumentException("Матч не может быть null");
+        if (match.getId() <= 0) throw new IllegalArgumentException("Некорректный ID матча");
+        matchRepository.update(match);
+    }
 }

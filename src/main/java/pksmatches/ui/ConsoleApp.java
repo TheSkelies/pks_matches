@@ -15,15 +15,12 @@ import pksmatches.repository.impl.UserRepositoryJdbc;
 import pksmatches.service.MatchService;
 import pksmatches.service.TournamentService;
 import pksmatches.service.UserService;
-import pksmatches.util.ExcelExporter;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -77,9 +74,6 @@ public class ConsoleApp {
                 case 11 -> listUsers();
                 case 12 -> addUser();
                 case 13 -> logout();
-                case 14 -> exportToExcel();
-                case 15 -> sortMatchesMenu();
-                case 16 -> sortTournamentsMenu();
                 case 0 -> running = false;
                 default -> System.out.println("Неверный пункт меню.");
             }
@@ -116,9 +110,6 @@ public class ConsoleApp {
         System.out.println("11. Список пользователей");
         System.out.println("12. Добавить пользователя");
         System.out.println("13. Сменить пользователя (Logout)");
-        System.out.println("14. Экспорт в Excel");
-        System.out.println("15. Сортировка матчей");
-        System.out.println("16. Сортировка турниров");
         System.out.println("0. Выход");
     }
 
@@ -359,74 +350,6 @@ public class ConsoleApp {
         }
     }
 
-    // ============ СОРТИРОВКА МАТЧЕЙ ============
-
-    private void sortMatchesMenu() {
-        System.out.println();
-        System.out.println("Сортировка матчей:");
-        System.out.println("1. По дате (возрастание)");
-        System.out.println("2. По дате (убывание)");
-        System.out.println("3. По турниру (название)");
-        System.out.println("4. По статусу");
-        int choice = readInt("Выбор: ");
-
-        List<Match> list = matchService.getAllMatches();
-        if (list.isEmpty()) {
-            System.out.println("Матчей нет.");
-            return;
-        }
-
-        switch (choice) {
-            case 1 -> list.sort(Comparator.comparing(Match::getMatchDate));
-            case 2 -> list.sort(Comparator.comparing(Match::getMatchDate).reversed());
-            case 3 -> list.sort(Comparator.comparing(
-                    m -> m.getTournament() != null ? m.getTournament().getName() : "",
-                    String.CASE_INSENSITIVE_ORDER));
-            case 4 -> list.sort(Comparator.comparing(m -> m.getStatus() != null
-                    ? m.getStatus().ordinal() : Integer.MAX_VALUE));
-            default -> {
-                System.out.println("Неверный выбор.");
-                return;
-            }
-        }
-        printMatches(list);
-    }
-
-    // ============ СОРТИРОВКА ТУРНИРОВ ============
-
-    private void sortTournamentsMenu() {
-        System.out.println();
-        System.out.println("Сортировка турниров:");
-        System.out.println("1. По названию (А-Я)");
-        System.out.println("2. По названию (Я-А)");
-        System.out.println("3. По дате начала (возрастание)");
-        System.out.println("4. По дате начала (убывание)");
-        int choice = readInt("Выбор: ");
-
-        List<Tournament> list = tournamentService.getAll();
-        if (list.isEmpty()) {
-            System.out.println("Турниров нет.");
-            return;
-        }
-
-        switch (choice) {
-            case 1 -> list.sort(Comparator.comparing(Tournament::getName, String.CASE_INSENSITIVE_ORDER));
-            case 2 -> list.sort(Comparator.comparing(Tournament::getName, String.CASE_INSENSITIVE_ORDER).reversed());
-            case 3 -> list.sort(Comparator.comparing(Tournament::getStartDate));
-            case 4 -> list.sort(Comparator.comparing(Tournament::getStartDate).reversed());
-            default -> {
-                System.out.println("Неверный выбор.");
-                return;
-            }
-        }
-
-        for (Tournament t : list) {
-            String end = t.getEndDate() != null ? t.getEndDate().format(DATE_FMT) : "не указана";
-            System.out.println(t.getId() + ". " + t.getName()
-                    + " (" + t.getStartDate().format(DATE_FMT) + " — " + end + ")");
-        }
-    }
-
     private String readLineSafe(String prompt) {
         while (true) {
             if (!prompt.isEmpty()) {
@@ -509,24 +432,6 @@ public class ConsoleApp {
             } catch (IllegalArgumentException e) {
                 System.out.println("Неверный этап (GROUP/QUARTER_FINAL/SEMI_FINAL/FINAL).");
             }
-        }
-    }
-
-    private void exportToExcel() {
-        System.out.print("Имя файла (по умолчанию — export.xlsx): ");
-        String path = scanner.nextLine().trim();
-        if (path.isEmpty()) path = "export.xlsx";
-
-        try {
-            ExcelExporter.exportAll(
-                    path,
-                    tournamentService.getAll(),
-                    matchService.getAllMatches(),
-                    userService.getAll()
-            );
-            System.out.println("Экспорт завершён. Файл: " + path);
-        } catch (IOException e) {
-            System.out.println("Ошибка экспорта: " + e.getMessage());
         }
     }
 }

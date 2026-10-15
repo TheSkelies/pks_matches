@@ -3,21 +3,21 @@ DROP TABLE IF EXISTS matches CASCADE;
 DROP TABLE IF EXISTS tournaments CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
-DROP TYPE IF EXISTS user_role;
-DROP TYPE IF EXISTS match_status;
-DROP TYPE IF EXISTS match_stage;
+DROP TYPE IF EXISTS userrole;
+DROP TYPE IF EXISTS matchstatus;
+DROP TYPE IF EXISTS matchstage;
 
 -- Создание перечислений (ENUM)
-CREATE TYPE user_role AS ENUM ('ADMIN', 'USER', 'GUEST');
-CREATE TYPE match_status AS ENUM ('SCHEDULED', 'LIVE', 'FINISHED', 'CANCELLED');
-CREATE TYPE match_stage AS ENUM ('GROUP', 'QUARTER_FINAL', 'SEMI_FINAL', 'FINAL');
+CREATE TYPE userrole AS ENUM ('ADMIN', 'USER', 'GUEST');
+CREATE TYPE matchstatus AS ENUM ('SCHEDULED', 'LIVE', 'FINISHED', 'CANCELLED');
+CREATE TYPE matchstage AS ENUM ('GROUP', 'QUARTER_FINAL', 'SEMI_FINAL', 'FINAL');
 
 -- Таблица пользователей с проверкой уникальности логина и хэшированными паролями
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role user_role NOT NULL DEFAULT 'USER'
+    role userrole NOT NULL DEFAULT 'USER'
 );
 
 -- Таблица турниров с контролем корректности дат
@@ -36,8 +36,8 @@ CREATE TABLE matches (
     team1 VARCHAR(100) NOT NULL,
     team2 VARCHAR(100) NOT NULL,
     match_date TIMESTAMP NOT NULL,
-    status match_status NOT NULL DEFAULT 'SCHEDULED',
-    stage match_stage NOT NULL DEFAULT 'GROUP',
+    status matchstatus NOT NULL DEFAULT 'SCHEDULED',
+    stage matchstage NOT NULL DEFAULT 'GROUP',
     score1 INT NOT NULL DEFAULT 0,
     score2 INT NOT NULL DEFAULT 0,
     FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
