@@ -138,6 +138,20 @@ public class MainController {
     private void setupFilters() {
         statusFilter.setItems(FXCollections.observableArrayList(MatchStatus.values()));
 
+        // ▼▼▼ ДОБАВЛЕННЫЙ БЛОК: Настройка отображения названий турниров в ComboBox ▼▼▼
+        tournamentFilter.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Tournament item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName()); // Выводим только название
+                }
+            }
+        });
+        // ▲▲▲ КОНЕЦ ДОБАВЛЕННОГО БЛОКА ▲▲▲
+
         statusFilter.valueProperty().addListener((obs, o, n) -> applyFilters());
         tournamentFilter.valueProperty().addListener((obs, o, n) -> applyFilters());
         dateFromFilter.valueProperty().addListener((obs, o, n) -> applyFilters());
