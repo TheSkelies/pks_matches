@@ -43,7 +43,7 @@ public class UserRepositoryJdbc implements UserRepository {
 
     @Override
     public User save(User user) {
-        String sql = "INSERT INTO users (username, password_hash, role) VALUES (?, ?, CAST(? AS user_role))";
+        String sql = "INSERT INTO users (username, password_hash, role) VALUES (?, ?, CAST(? AS userrole))";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getUsername());
@@ -61,7 +61,7 @@ public class UserRepositoryJdbc implements UserRepository {
 
     @Override
     public void update(User user) {
-        String sql = "UPDATE users SET username = ?, password_hash = ?, role = CAST(? AS user_role) WHERE id = ?";
+        String sql = "UPDATE users SET username = ?, password_hash = ?, role = CAST(? AS userrole) WHERE id = ?";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
