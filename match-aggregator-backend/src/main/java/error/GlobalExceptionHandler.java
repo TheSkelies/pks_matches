@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest req) {
-        // Не отдаём stack trace клиенту
+       
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Внутренняя ошибка сервера", null, req);
     }
 

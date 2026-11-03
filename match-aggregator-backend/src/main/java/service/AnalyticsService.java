@@ -1,6 +1,7 @@
 package ru.mirea.matchaggregator.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.mirea.matchaggregator.domain.Match;
 import ru.mirea.matchaggregator.dto.analytics.AnalyticsResponse;
 import ru.mirea.matchaggregator.repository.MatchRepository;
@@ -18,6 +19,7 @@ public class AnalyticsService {
         this.matchRepository = matchRepository;
     }
 
+    @Transactional(readOnly = true)
     public AnalyticsResponse summary() {
         List<Match> all = matchRepository.findAll();
 

@@ -39,11 +39,13 @@ public class MatchService {
         this.auditService = auditService;
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true) // <--- ВОТ ЭТО
     public Page<Match> findAll(MatchFilter filter, Pageable pageable) {
         Specification<Match> spec = MatchSpecifications.byFilter(filter);
         return matchRepository.findAll(spec, pageable);
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true) // <--- ВОТ ЭТО
     public Match getById(UUID id) {
         return matchRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Матч не найден: " + id));

@@ -1,6 +1,5 @@
 -- V2__seed_data.sql
 -- Тестовые данные для агрегатора матчей.
--- Администратор создаётся автоматически кодом (BootstrapService) при старте.
 
 -- ==================== ТУРНИРЫ ====================
 INSERT INTO tournaments (id, name, start_date, end_date, active) VALUES
@@ -17,29 +16,26 @@ INSERT INTO tags (id, name) VALUES
     (uuid_generate_v4(), 'товарищеский');
 
 -- ==================== МАТЧИ ====================
--- Используем подзапросы для получения UUID турниров по имени
-INSERT INTO matches (id, external_code, tournament_id, team1, team2, match_date, status, stage, score1, score2, priority, is_important, archived)
-SELECT
+INSERT INTO matches (id, external_code, tournament_id, team1, team2, match_date, status, stage, score1, score2, priority, is_important, archived) 
+SELECT 
     uuid_generate_v4(),
-    'M-' || generate_series::text,
+    'M-' || row_number() OVER (),
     (SELECT id FROM tournaments WHERE name = 'Чемпионат мира 2026'),
-    team1, team2, match_date, status, stage, score1, score2, priority, is_important, archived
+    team1, team2, match_date::timestamptz, status, stage, score1, score2, priority, is_important, archived
 FROM (VALUES
-    ('Аргентина', 'Франция', '2026-06-15 18:00:00+03'::timestamptz, 'SCHEDULED', 'GROUP', 0, 0, 10, TRUE, FALSE),
-    ('Бразилия', 'Германия', '2026-06-16 21:00:00+03'::timestamptz, 'SCHEDULED', 'GROUP', 0, 0, 9, TRUE, FALSE),
-    ('Испания', 'Англия', '2026-06-18 18:00:00+03'::timestamptz, 'FINISHED', 'GROUP', 2, 1, 7, FALSE, FALSE),
-    ('Португалия', 'Нидерланды', '2026-06-20 21:00:00+03'::timestamptz, 'LIVE', 'GROUP', 1, 1, 8, FALSE, FALSE),
-    ('Манчестер Сити', 'Реал Мадрид', '2026-02-15 22:00:00+03'::timestamptz, 'FINISHED', 'QUARTER_FINAL', 3, 2, 10, TRUE, FALSE),
-    ('Бавария', 'ПСЖ', '2026-02-16 22:00:00+03'::timestamptz, 'SCHEDULED', 'SEMI_FINAL', 0, 0, 9, TRUE, FALSE),
-    ('Спартак', 'Зенит', '2026-03-01 19:00:00+03'::timestamptz, 'SCHEDULED', 'GROUP', 0, 0, 6, FALSE, FALSE),
-    ('ЦСКА', 'Динамо', '2026-03-02 20:00:00+03'::timestamptz, 'CANCELLED', 'GROUP', 0, 0, 5, FALSE, FALSE),
-    ('Ливерпуль', 'Арсенал', '2026-04-10 19:30:00+03'::timestamptz, 'SCHEDULED', 'GROUP', 0, 0, 8, FALSE, FALSE),
-    ('Ювентус', 'Интер', '2025-12-10 22:00:00+03'::timestamptz, 'FINISHED', 'FINAL', 1, 0, 10, TRUE, TRUE)
-) AS v(team1, team2, match_date, status, stage, score1, score2, priority, is_important, archived)
-CROSS JOIN generate_series(1, 10);
+    ('Аргентина', 'Франция', '2026-06-15 18:00:00+03', 'SCHEDULED', 'GROUP', 0, 0, 10, TRUE, FALSE),
+    ('Бразилия', 'Германия', '2026-06-16 21:00:00+03', 'SCHEDULED', 'GROUP', 0, 0, 9, TRUE, FALSE),
+    ('Испания', 'Англия', '2026-06-18 18:00:00+03', 'FINISHED', 'GROUP', 2, 1, 7, FALSE, FALSE),
+    ('Португалия', 'Нидерланды', '2026-06-20 21:00:00+03', 'LIVE', 'GROUP', 1, 1, 8, FALSE, FALSE),
+    ('Манчестер Сити', 'Реал Мадрид', '2026-02-15 22:00:00+03', 'FINISHED', 'QUARTER_FINAL', 3, 2, 10, TRUE, FALSE),
+    ('Бавария', 'ПСЖ', '2026-02-16 22:00:00+03', 'SCHEDULED', 'SEMI_FINAL', 0, 0, 9, TRUE, FALSE),
+    ('Спартак', 'Зенит', '2026-03-01 19:00:00+03', 'SCHEDULED', 'GROUP', 0, 0, 6, FALSE, FALSE),
+    ('ЦСКА', 'Динамо', '2026-03-02 20:00:00+03', 'CANCELLED', 'GROUP', 0, 0, 5, FALSE, FALSE),
+    ('Ливерпуль', 'Арсенал', '2026-04-10 19:30:00+03', 'SCHEDULED', 'GROUP', 0, 0, 8, FALSE, FALSE),
+    ('Ювентус', 'Интер', '2025-12-10 22:00:00+03', 'FINISHED', 'FINAL', 1, 0, 10, TRUE, TRUE)
+) AS v(team1, team2, match_date, status, stage, score1, score2, priority, is_important, archived);
 
--- Привяжем пару тегов к матчам для теста
--- (берём первые 3 матча и первый тег)
+-- ==================== ПРИВЯЗКА ТЕГОВ ====================
 INSERT INTO match_tags (match_id, tag_id)
 SELECT m.id, t.id
 FROM matches m, tags t
