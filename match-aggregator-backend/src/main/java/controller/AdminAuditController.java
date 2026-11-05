@@ -21,7 +21,7 @@ public class AdminAuditController {
     public AdminAuditController(AuditEventRepository auditRepository) {
         this.auditRepository = auditRepository;
     }
-
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     @GetMapping
     public PageResponse<AuditDto> findAll(
             @RequestParam(defaultValue = "0") int page,

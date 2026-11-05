@@ -30,7 +30,7 @@ public class NoteService {
         this.matchService = matchService;
         this.userRepository = userRepository;
     }
-
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<Note> findByMatch(UUID matchId) {
         // Проверяем, что матч существует
         matchService.getById(matchId);
