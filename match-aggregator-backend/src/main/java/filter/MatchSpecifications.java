@@ -1,6 +1,7 @@
 package ru.mirea.matchaggregator.filter;
 
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import ru.mirea.matchaggregator.domain.Match;
@@ -14,6 +15,14 @@ public class MatchSpecifications {
     public static Specification<Match> byFilter(MatchFilter filter) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            // ХАК: Заставляем Hibernate подгрузить турнир и теги (JOIN FETCH)
+            // Но делаем это только для основного запроса, а не для COUNT запроса пагинации
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                root.fetch("tournament", JoinType.LEFT);
+                root.fetch("tags", JoinType.LEFT);
+                query.distinct(true); // Обязательно при fetch join коллекций
+            }
 
             if (filter.search() != null && !filter.search().isBlank()) {
                 String like = "%" + filter.search().toLowerCase() + "%";

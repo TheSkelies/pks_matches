@@ -1,5 +1,6 @@
 package ru.mirea.matchaggregator.dto.match;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import ru.mirea.matchaggregator.domain.Match;
 import ru.mirea.matchaggregator.domain.enums.MatchStage;
 import ru.mirea.matchaggregator.domain.enums.MatchStatus;
@@ -22,7 +23,7 @@ public record MatchDto(
         int score1,
         int score2,
         int priority,
-        boolean isImportant,
+        @JsonProperty("isImportant") boolean isImportant, // <--- Явно указываем имя для JSON
         boolean archived,
         long version,
         Instant createdAt,
@@ -33,8 +34,8 @@ public record MatchDto(
         return new MatchDto(
                 m.getId(),
                 m.getExternalCode(),
-                m.getTournament().getId(),
-                m.getTournament().getName(),
+                m.getTournament() != null ? m.getTournament().getId() : null,
+                m.getTournament() != null ? m.getTournament().getName() : "Без турнира",
                 m.getTeam1(),
                 m.getTeam2(),
                 m.getMatchDate(),
@@ -48,7 +49,7 @@ public record MatchDto(
                 m.getVersion(),
                 m.getCreatedAt(),
                 m.getUpdatedAt(),
-                m.getTags().stream().map(t -> t.getName()).collect(Collectors.toSet())
+                m.getTags() != null ? m.getTags().stream().map(t -> t.getName()).collect(Collectors.toSet()) : Set.of()
         );
     }
 }
