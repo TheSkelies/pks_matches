@@ -41,6 +41,9 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+  web:
+    resources:
+      static-locations: classpath:/static/
 
 app:
   jwt:
