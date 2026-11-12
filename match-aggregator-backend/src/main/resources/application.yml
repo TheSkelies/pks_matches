@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: match-aggregator
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  datasource:
+    url: jdbc:postgresql://localhost:55432/match_aggregator
+    username: match_aggregator_app
+    password: ChangeMe123!MatchAggregator
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  web:
+    resources:
+      static-locations: classpath:/static/
+
+app:
+  jwt:
+    secret-base64: Q2hhbmdlVGhpc1NlY3JldFRvQVN0cm9uZ0Jhc2U2NEtleUZvckpXVCU=
+    issuer: match-aggregator
+    access-minutes: 15
+    refresh-days: 14
+
+  bootstrap:
+    email: admin@match.local
+    name: System Administrator
+    password: Admin123!ChangeMe
+
+  cors:
+    allowed-origins: http://localhost:8080
+
+  permanent-delete-enabled: false
