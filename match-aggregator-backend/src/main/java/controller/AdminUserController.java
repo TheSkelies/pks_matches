@@ -15,11 +15,13 @@ import ru.mirea.matchaggregator.dto.admin.UserUpdateRequest;
 import ru.mirea.matchaggregator.dto.common.PageResponse;
 import ru.mirea.matchaggregator.repository.UserAccountRepository;
 import ru.mirea.matchaggregator.service.UserAdminService;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin/users")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
 
     private final UserAdminService service;

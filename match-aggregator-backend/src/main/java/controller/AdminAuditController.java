@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.mirea.matchaggregator.domain.AuditEvent;
 import ru.mirea.matchaggregator.dto.common.PageResponse;
 import ru.mirea.matchaggregator.repository.AuditEventRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/admin/audit")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminAuditController {
 
     private final AuditEventRepository auditRepository;
