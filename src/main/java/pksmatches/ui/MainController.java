@@ -131,20 +131,30 @@ public class MainController {
         tournamentTable.setPlaceholder(new Label("Турниров нет"));
         tournamentTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
-        // ★ ГЛАВНОЕ ИСПРАВЛЕНИЕ БАГА С ТУРНИРАМИ:
         tournamentTable.setItems(tournaments);
     }
 
     private void setupFilters() {
         statusFilter.setItems(FXCollections.observableArrayList(MatchStatus.values()));
 
+        tournamentFilter.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Tournament item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName());
+                }
+            }
+        });
+        tournamentFilter.setButtonCell(tournamentFilter.getCellFactory().call(null));
         statusFilter.valueProperty().addListener((obs, o, n) -> applyFilters());
         tournamentFilter.valueProperty().addListener((obs, o, n) -> applyFilters());
         dateFromFilter.valueProperty().addListener((obs, o, n) -> applyFilters());
         dateToFilter.valueProperty().addListener((obs, o, n) -> applyFilters());
     }
 
-    // ============ ЗАГРУЗКА ДАННЫХ ============
 
     private void reloadAll() {
         try {
