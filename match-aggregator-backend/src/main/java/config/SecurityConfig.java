@@ -46,11 +46,22 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Админка - только для админа
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/**").hasAnyRole("EDITOR", "ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/**").hasAnyRole("EDITOR", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasAnyRole("EDITOR", "ADMIN")
+
+                        // Чтение данных - разрешено всем, кто вошел в систему (GET)
+                        .requestMatchers(HttpMethod.GET, "/api/items/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/references/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/analytics/**").authenticated()
+
+                        // Изменение данных - только для редакторов и админов (POST, PUT, DELETE)
+                        .requestMatchers(HttpMethod.POST, "/api/items/**").hasAnyRole("EDITOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/items/**").hasAnyRole("EDITOR", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/items/**").hasAnyRole("EDITOR", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/references/**").hasAnyRole("EDITOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/references/**").hasAnyRole("EDITOR", "ADMIN")
+
+                        // Всё остальное - только авторизованным
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
